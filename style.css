@@ -13,6 +13,13 @@
 
 * { box-sizing: border-box; }
 
+/* Ensure the `hidden` attribute always wins over any display rule below —
+   without this, .greeting-view's display:flex overrides [hidden], so the
+   greeting and chat views can end up rendering on top of each other. */
+[hidden] {
+  display: none !important;
+}
+
 html, body {
   margin: 0;
   padding: 0;
@@ -140,6 +147,12 @@ html, body {
 
 .footer-title { font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 12.5px; }
 .footer-sub { font-size: 12px; color: var(--plum-faint); }
+
+.cat-icon-sm, .cat-icon-lg, .msg-avatar img {
+  object-fit: contain;
+  border-radius: 50%;
+  background: #fff;
+}
 
 /* ---------- Main ---------- */
 .main {
