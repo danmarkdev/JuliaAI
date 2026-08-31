@@ -1,15 +1,15 @@
 // ---------------------------------------------------------------
-// PASTE YOUR CLOUDFLARE WORKER URL HERE (see mimi-worker.js setup steps).
+// PASTE YOUR CLOUDFLARE WORKER URL HERE (see Mimi worker.js setup steps).
 // The worker holds your Gemini API key server-side so it never
 // appears in this file or anywhere the browser can see it.
-// e.g. "https://mimi-chat-proxy.your-subdomain.workers.dev"
+// e.g. "https://julia-ai-chat-proxy.your-subdomain.workers.dev"
 const API_ENDPOINT = "https://mimi-chat-proxy.YOUR-SUBDOMAIN.workers.dev";
 // ---------------------------------------------------------------
 
 const i18n = {
   en: {
-    modelPill: "Mimi · your kitty companion",
-    heroTitle: "Hi, I'm Mimi",
+    modelPill: "🎀 Julia AI 🎀 · your kitty companion",
+    heroTitle: "Hi, I'm 🎀 Julia AI 🎀",
     heroSubtitle: "Ask me anything — I'm listening with my whole bow.",
     chip1: "✨ Fun fact", chip2: "🎀 Write a poem", chip3: "📋 Plan my day", chip4: "💡 Explain simply",
     prompt1: "Tell me a fun fact I probably don't know",
@@ -19,18 +19,18 @@ const i18n = {
     newChat: "New chat",
     recent: "Recent",
     footer: "Made with 🎀 for you",
-    placeholder: "Message Mimi...",
-    disclaimer: "Mimi can make mistakes. Double-check important info.",
+    placeholder: "Message Julia AI...",
+    disclaimer: "Julia AI can make mistakes. Double-check important info.",
     newChatTitle: "New chat",
     errorMsg: "Oops, my bow slipped! Something went wrong reaching the server. Please try again in a moment. 🎀",
     languageName: "English",
     noChatsYet: "No chats in this language yet",
     deleteChat: "Delete chat",
-    notConfiguredMsg: "Mimi isn't connected to a brain yet! The site owner needs to set up the backend (see mimi-worker.js) before I can chat for real. 🎀"
+    notConfiguredMsg: "Julia AI isn't connected to a brain yet! The site owner needs to set up the backend (see Mimi worker.js) before I can chat for real. 🎀"
   },
   fil: {
-    modelPill: "Mimi · ang kaibigan mong pusa",
-    heroTitle: "Hi, ako si Mimi",
+    modelPill: "🎀 Julia AI 🎀 · ang kaibigan mong pusa",
+    heroTitle: "Hi, ako si Julia AI",
     heroSubtitle: "Itanong mo kahit ano — nakikinig ako nang buong-buo.",
     chip1: "✨ Kwentong kaalaman", chip2: "🎀 Sumulat ng tula", chip3: "📋 Planuhin ang araw ko", chip4: "💡 Ipaliwanag nang simple",
     prompt1: "Sabihan mo ako ng kawili-wiling kaalaman na hindi ko pa alam",
@@ -40,18 +40,18 @@ const i18n = {
     newChat: "Bagong chat",
     recent: "Kamakailan",
     footer: "Ginawa nang may 🎀 para sa'yo",
-    placeholder: "Mag-message kay Mimi...",
-    disclaimer: "Posibleng magkamali si Mimi. I-double check ang mahahalagang impormasyon.",
+    placeholder: "Mag-message kay Julia AI...",
+    disclaimer: "Posibleng magkamali si Julia AI. I-double check ang mahahalagang impormasyon.",
     newChatTitle: "Bagong chat",
     errorMsg: "Ay, natanggal ang laso ko! May naganap na error sa server. Subukan ulit sandali. 🎀",
     languageName: "Filipino",
     noChatsYet: "Wala pang chat sa wikang ito",
     deleteChat: "Burahin ang chat",
-    notConfiguredMsg: "Hindi pa naka-connect si Mimi sa utak niya! Kailangan munang i-set up ng may-ari ng site ang backend (tingnan ang mimi-worker.js) bago ako makapag-chat nang totoo. 🎀"
+    notConfiguredMsg: "Hindi pa naka-connect si Julia AI sa utak niya! Kailangan munang i-set up ng may-ari ng site ang backend (tingnan ang Mimi worker.js) bago ako makapag-chat nang totoo. 🎀"
   },
   ja: {
-    modelPill: "ミミ・あなたの猫の相棒",
-    heroTitle: "こんにちは、ミミです",
+    modelPill: "🎀 ジュリアAI 🎀 ・あなたの猫の相棒",
+    heroTitle: "こんにちは、ジュリアAIです",
     heroSubtitle: "なんでも聞いてね。リボンを揺らして耳を澄ませてるよ。",
     chip1: "✨ 豆知識", chip2: "🎀 詩を書く", chip3: "📋 一日の予定", chip4: "💡 やさしく説明",
     prompt1: "私が知らなそうな面白い豆知識を教えて",
@@ -61,18 +61,18 @@ const i18n = {
     newChat: "新しいチャット",
     recent: "最近のチャット",
     footer: "🎀 を込めて作りました",
-    placeholder: "ミミにメッセージを送る...",
-    disclaimer: "ミミも間違えることがあります。重要な情報は確認してね。",
+    placeholder: "ジュリアAIにメッセージを送る...",
+    disclaimer: "ジュリアAIも間違えることがあります。重要な情報は確認してね。",
     newChatTitle: "新しいチャット",
     errorMsg: "あっ、リボンがほどけちゃった！サーバーに問題が発生しました。少し待ってからもう一度お試しください。🎀",
     languageName: "日本語",
     noChatsYet: "この言語のチャットはまだありません",
     deleteChat: "チャットを削除",
-    notConfiguredMsg: "まだミミの頭脳が接続されていないよ！ サイトの管理者がバックエンド（mimi-worker.js）を設定する必要があるの。🎀"
+    notConfiguredMsg: "まだジュリアAIの頭脳が接続されていないよ！ サイトの管理者がバックエンド（Mimi worker.js）を設定する必要があるの。🎀"
   },
   es: {
-    modelPill: "Mimi · tu amiga gatita",
-    heroTitle: "Hola, soy Mimi",
+    modelPill: "🎀 Julia AI 🎀 · tu amiga gatita",
+    heroTitle: "Hola, soy Julia AI",
     heroSubtitle: "Pregúntame lo que quieras — te escucho con todo mi lazo.",
     chip1: "✨ Dato curioso", chip2: "🎀 Escribe un poema", chip3: "📋 Planea mi día", chip4: "💡 Explica algo simple",
     prompt1: "Cuéntame un dato curioso que probablemente no conozca",
@@ -82,18 +82,18 @@ const i18n = {
     newChat: "Nuevo chat",
     recent: "Recientes",
     footer: "Hecho con 🎀 para ti",
-    placeholder: "Escríbele a Mimi...",
-    disclaimer: "Mimi puede cometer errores. Verifica la información importante.",
+    placeholder: "Escríbele a Julia AI...",
+    disclaimer: "Julia AI puede cometer errores. Verifica la información importante.",
     newChatTitle: "Nuevo chat",
     errorMsg: "¡Ups, se me soltó el lazo! Algo salió mal con el servidor. Intenta de nuevo en un momento. 🎀",
     languageName: "Español",
     noChatsYet: "Aún no hay chats en este idioma",
     deleteChat: "Eliminar chat",
-    notConfiguredMsg: "¡Mimi todavía no está conectada a un cerebro! El dueño del sitio debe configurar el backend (ver mimi-worker.js) antes de que pueda chatear de verdad. 🎀"
+    notConfiguredMsg: "¡Julia AI todavía no está conectada a un cerebro! El dueño del sitio debe configurar el backend (ver Mimi worker.js) antes de que pueda chatear de verdad. 🎀"
   },
   ko: {
-    modelPill: "미미 · 나의 고양이 친구",
-    heroTitle: "안녕, 나는 미미야",
+    modelPill: "🎀 줄리아 AI 🎀 · 나의 고양이 친구",
+    heroTitle: "안녕, 나는 줄리아 AI야",
     heroSubtitle: "무엇이든 물어봐 — 리본을 쫑긋 세우고 듣고 있을게.",
     chip1: "✨ 재미있는 사실", chip2: "🎀 시 써주기", chip3: "📋 하루 계획", chip4: "💡 쉽게 설명하기",
     prompt1: "내가 잘 모를 것 같은 재미있는 사실 하나 알려줘",
@@ -103,14 +103,14 @@ const i18n = {
     newChat: "새 채팅",
     recent: "최근 채팅",
     footer: "🎀 마음을 담아 만들었어요",
-    placeholder: "미미에게 메시지 보내기...",
-    disclaimer: "미미도 실수를 할 수 있어요. 중요한 정보는 다시 확인하세요.",
+    placeholder: "줄리아 AI에게 메시지 보내기...",
+    disclaimer: "줄리아 AI도 실수를 할 수 있어요. 중요한 정보는 다시 확인하세요.",
     newChatTitle: "새 채팅",
     errorMsg: "앗, 리본이 풀렸어! 서버에 문제가 생겼어요. 잠시 후 다시 시도해주세요. 🎀",
     languageName: "한국어",
     noChatsYet: "이 언어로 된 채팅이 아직 없어요",
     deleteChat: "채팅 삭제",
-    notConfiguredMsg: "미미가 아직 두뇌에 연결되지 않았어요! 사이트 관리자가 백엔드(mimi-worker.js 참고)를 먼저 설정해야 진짜로 대화할 수 있어요. 🎀"
+    notConfiguredMsg: "줄리아 AI가 아직 두뇌에 연결되지 않았어요! 사이트 관리자가 백엔드(Mimi worker.js 참고)를 먼저 설정해야 진짜로 대화할 수 있어요. 🎀"
   }
 };
 
@@ -344,7 +344,7 @@ async function send(){
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        system: "You are Mimi, a warm, cheerful, kind AI companion with a cute cat-and-bow personality. Keep replies friendly, clear, and not overly long unless asked. Light, tasteful use of an occasional emoji like 🎀 or 🐾 is welcome but don't overdo it. Always respond in " + t('languageName') + ", regardless of what language the user writes in, unless they explicitly ask you to switch languages.",
+        system: "You are Julia AI, a warm, cheerful, kind AI companion with a cute cat-and-bow personality. Keep replies friendly, clear, and not overly long unless asked. Light, tasteful use of an occasional emoji like 🎀 or 🐾 is welcome but don't overdo it. Always respond in " + t('languageName') + ", regardless of what language the user writes in, unless they explicitly ask you to switch languages.",
         messages: apiMessages
       })
     });
