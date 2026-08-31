@@ -1,5 +1,0 @@
-{
-  "name": "kitty-chat",
-  "version": "1.0.0",
-  "description": "A kawaii cat-themed AI chatbot, deployed on Vercel (static frontend + serverless API function)."
-}
