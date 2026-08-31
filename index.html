@@ -33,15 +33,17 @@
     color:var(--ink);
     overflow:hidden;
   }
+  html, body, .app { width:100%; height:100%; }
   .app{
-    display:grid;
-    grid-template-columns: 272px 1fr;
-    height:100vh;
-    width:100vw;
+    display:flex;
+    flex-direction:row;
+    align-items:stretch;
   }
 
   /* ---------- Sidebar ---------- */
   .sidebar{
+    flex: 0 0 272px;
+    width:272px;
     background: var(--white);
     border-right: 1px solid var(--line);
     display:flex;
@@ -112,6 +114,12 @@
   }
   .history-item:hover{ background: var(--pink-50); }
   .history-item.active{ background: var(--pink-100); color:var(--bow-dark); font-weight:700; }
+  .history-empty{
+    padding:9px 12px;
+    font-size:13px;
+    color:var(--ink-soft);
+    font-style:italic;
+  }
 
   .sidebar-footer{
     font-size:12px;
@@ -125,8 +133,9 @@
   .main{
     display:flex;
     flex-direction:column;
-    height:100vh;
+    flex: 1 1 auto;
     min-width:0;
+    height:100vh;
     position:relative;
   }
   .topbar{
@@ -369,7 +378,6 @@
 
   /* mobile */
   @media (max-width: 820px){
-    .app{ grid-template-columns: 1fr; }
     .sidebar{
       position:fixed; top:0; left:0; bottom:0; width:260px;
       transform: translateX(-100%);
@@ -503,7 +511,8 @@ const i18n = {
     disclaimer: "Mimi can make mistakes. Double-check important info.",
     newChatTitle: "New chat",
     errorMsg: "Oops, my bow slipped! Something went wrong reaching the server. Please try again in a moment. 🎀",
-    languageName: "English"
+    languageName: "English",
+    noChatsYet: "No chats in this language yet"
   },
   fil: {
     modelPill: "Mimi · ang kaibigan mong pusa",
@@ -521,7 +530,8 @@ const i18n = {
     disclaimer: "Posibleng magkamali si Mimi. I-double check ang mahahalagang impormasyon.",
     newChatTitle: "Bagong chat",
     errorMsg: "Ay, natanggal ang laso ko! May naganap na error sa server. Subukan ulit sandali. 🎀",
-    languageName: "Filipino"
+    languageName: "Filipino",
+    noChatsYet: "Wala pang chat sa wikang ito"
   },
   ja: {
     modelPill: "ミミ・あなたの猫の相棒",
@@ -539,7 +549,8 @@ const i18n = {
     disclaimer: "ミミも間違えることがあります。重要な情報は確認してね。",
     newChatTitle: "新しいチャット",
     errorMsg: "あっ、リボンがほどけちゃった！サーバーに問題が発生しました。少し待ってからもう一度お試しください。🎀",
-    languageName: "日本語"
+    languageName: "日本語",
+    noChatsYet: "この言語のチャットはまだありません"
   },
   es: {
     modelPill: "Mimi · tu amiga gatita",
@@ -557,7 +568,8 @@ const i18n = {
     disclaimer: "Mimi puede cometer errores. Verifica la información importante.",
     newChatTitle: "Nuevo chat",
     errorMsg: "¡Ups, se me soltó el lazo! Algo salió mal con el servidor. Intenta de nuevo en un momento. 🎀",
-    languageName: "Español"
+    languageName: "Español",
+    noChatsYet: "Aún no hay chats en este idioma"
   },
   ko: {
     modelPill: "미미 · 나의 고양이 친구",
@@ -575,7 +587,8 @@ const i18n = {
     disclaimer: "미미도 실수를 할 수 있어요. 중요한 정보는 다시 확인하세요.",
     newChatTitle: "새 채팅",
     errorMsg: "앗, 리본이 풀렸어! 서버에 문제가 생겼어요. 잠시 후 다시 시도해주세요. 🎀",
-    languageName: "한국어"
+    languageName: "한국어",
+    noChatsYet: "이 언어로 된 채팅이 아직 없어요"
   }
 };
 
@@ -601,6 +614,14 @@ function applyLanguage(){
 document.getElementById('langSelect').addEventListener('change', (e) => {
   currentLang = e.target.value;
   applyLanguage();
+  const existing = conversations.find(c => c.lang === currentLang);
+  if(existing){
+    currentId = existing.id;
+    renderHistory();
+    renderChat();
+  } else {
+    newConversation();
+  }
 });
 
 const chatScroll = document.getElementById('chatScroll');
@@ -620,7 +641,7 @@ let currentId = null;
 function uid(){ return Math.random().toString(36).slice(2,9); }
 
 function newConversation(){
-  const conv = { id: uid(), title: 'New chat', messages: [] };
+  const conv = { id: uid(), title: t('newChatTitle'), lang: currentLang, messages: [] };
   conversations.unshift(conv);
   currentId = conv.id;
   renderHistory();
@@ -633,7 +654,15 @@ function currentConv(){
 
 function renderHistory(){
   historyEl.innerHTML = '';
-  conversations.forEach(c => {
+  const filtered = conversations.filter(c => c.lang === currentLang);
+  if(filtered.length === 0){
+    const empty = document.createElement('div');
+    empty.className = 'history-empty';
+    empty.textContent = t('noChatsYet');
+    historyEl.appendChild(empty);
+    return;
+  }
+  filtered.forEach(c => {
     const div = document.createElement('div');
     div.className = 'history-item' + (c.id === currentId ? ' active' : '');
     div.textContent = c.title;
