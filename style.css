@@ -1,17 +1,17 @@
 :root{
-  /* dark theme built around #FE019A (sampled from user's swatch) — pushed more saturated/magenta throughout */
-  --pink-50:#35061f;
-  --pink-100:#4a0929;
-  --pink-200:#70103d;
-  --pink-300:#a3145a;
+  /* bright theme: background IS the sampled swatch #FE019A, white cards float on top */
+  --pink-50:#ffe1f2;
+  --pink-100:#ffc2e6;
+  --pink-200:#ff8fd4;
+  --pink-300:#ff5fc2;
   --bow:#fe019a;
-  --bow-dark:#ff4fb6;
-  --cream:#1a0210;
-  --ink:#ffe0f2;
-  --ink-soft:#d179ae;
-  --line:#4a0e2c;
-  --surface:#2a071a;
-  --shadow: 0 8px 28px rgba(254,1,154,0.42);
+  --bow-dark:#c4017a;
+  --cream:#fe019a;
+  --ink:#350422;
+  --ink-soft:#8a0f52;
+  --line:#ffc2e6;
+  --surface:#ffffff;
+  --shadow: 0 10px 28px rgba(58,5,34,0.28);
 }
 *{box-sizing:border-box;}
 html,body{height:100%;}
@@ -238,14 +238,12 @@ html, body, .app { width:100%; height:100%; }
   font-size:34px;
   line-height:1.25;
   margin:0 0 6px;
-  background: linear-gradient(100deg, var(--bow-dark), #ff8fd4 60%, #ffc2e6);
-  -webkit-background-clip: text;
-  background-clip:text;
-  color:transparent;
+  color:#ffffff;
+  text-shadow: 0 2px 10px rgba(58,5,34,0.25);
 }
 .hero p{
   font-size:16px;
-  color:var(--ink-soft);
+  color:#ffe1f2;
   margin:0 0 26px;
 }
 .chips{
@@ -382,7 +380,7 @@ html, body, .app { width:100%; height:100%; }
 .disclaimer{
   text-align:center;
   font-size:11.5px;
-  color:var(--ink-soft);
+  color:rgba(255,255,255,0.85);
   margin-top:10px;
 }
 
