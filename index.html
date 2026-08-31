@@ -102,18 +102,41 @@
     flex:1;
   }
   .history-item{
-    padding:9px 12px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:6px;
+    padding:9px 8px 9px 12px;
     border-radius:11px;
     font-size:14px;
     color:var(--ink);
     cursor:pointer;
+    transition: background .18s ease;
+  }
+  .history-item-title{
     white-space:nowrap;
     overflow:hidden;
     text-overflow:ellipsis;
-    transition: background .18s ease;
+    flex:1;
+    min-width:0;
   }
   .history-item:hover{ background: var(--pink-50); }
   .history-item.active{ background: var(--pink-100); color:var(--bow-dark); font-weight:700; }
+  .history-delete{
+    flex-shrink:0;
+    width:26px; height:26px;
+    border-radius:50%;
+    border:none;
+    background:transparent;
+    color: var(--ink-soft);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    opacity:0;
+    transition: opacity .15s ease, background .15s ease, color .15s ease;
+  }
+  .history-item:hover .history-delete{ opacity:1; }
+  .history-delete:hover{ background: var(--pink-200); color: var(--bow-dark); }
+  .history-delete svg{ width:14px; height:14px; }
   .history-empty{
     padding:9px 12px;
     font-size:13px;
@@ -271,7 +294,7 @@
     margin-top:2px;
   }
   .avatar.ai{ background: linear-gradient(135deg, var(--pink-200), var(--bow)); }
-  .avatar.user{ background: var(--ink); color:white; font-weight:700; font-size:12px; }
+  .avatar.user{ background: var(--ink); color:white; }
 
   .bubble{
     max-width: 78%;
@@ -494,6 +517,12 @@
 </div>
 
 <script>
+// ---------------------------------------------------------------
+// PASTE YOUR CLOUDFLARE WORKER URL HERE (see mimi-worker.js setup steps)
+// e.g. "https://mimi-chat-proxy.your-subdomain.workers.dev"
+const API_ENDPOINT = "https://mimi-chat-proxy.YOUR-SUBDOMAIN.workers.dev";
+// ---------------------------------------------------------------
+
 const i18n = {
   en: {
     modelPill: "Mimi · your kitty companion",
@@ -512,7 +541,9 @@ const i18n = {
     newChatTitle: "New chat",
     errorMsg: "Oops, my bow slipped! Something went wrong reaching the server. Please try again in a moment. 🎀",
     languageName: "English",
-    noChatsYet: "No chats in this language yet"
+    noChatsYet: "No chats in this language yet",
+    deleteChat: "Delete chat",
+    notConfiguredMsg: "Mimi isn't connected to a brain yet! The site owner needs to set up the backend (see mimi-worker.js) before I can chat for real. 🎀"
   },
   fil: {
     modelPill: "Mimi · ang kaibigan mong pusa",
@@ -531,7 +562,9 @@ const i18n = {
     newChatTitle: "Bagong chat",
     errorMsg: "Ay, natanggal ang laso ko! May naganap na error sa server. Subukan ulit sandali. 🎀",
     languageName: "Filipino",
-    noChatsYet: "Wala pang chat sa wikang ito"
+    noChatsYet: "Wala pang chat sa wikang ito",
+    deleteChat: "Burahin ang chat",
+    notConfiguredMsg: "Hindi pa naka-connect si Mimi sa utak niya! Kailangan munang i-set up ng may-ari ng site ang backend (tingnan ang mimi-worker.js) bago ako makapag-chat nang totoo. 🎀"
   },
   ja: {
     modelPill: "ミミ・あなたの猫の相棒",
@@ -550,7 +583,9 @@ const i18n = {
     newChatTitle: "新しいチャット",
     errorMsg: "あっ、リボンがほどけちゃった！サーバーに問題が発生しました。少し待ってからもう一度お試しください。🎀",
     languageName: "日本語",
-    noChatsYet: "この言語のチャットはまだありません"
+    noChatsYet: "この言語のチャットはまだありません",
+    deleteChat: "チャットを削除",
+    notConfiguredMsg: "まだミミの頭脳が接続されていないよ！ サイトの管理者がバックエンド（mimi-worker.js）を設定する必要があるの。🎀"
   },
   es: {
     modelPill: "Mimi · tu amiga gatita",
@@ -569,7 +604,9 @@ const i18n = {
     newChatTitle: "Nuevo chat",
     errorMsg: "¡Ups, se me soltó el lazo! Algo salió mal con el servidor. Intenta de nuevo en un momento. 🎀",
     languageName: "Español",
-    noChatsYet: "Aún no hay chats en este idioma"
+    noChatsYet: "Aún no hay chats en este idioma",
+    deleteChat: "Eliminar chat",
+    notConfiguredMsg: "¡Mimi todavía no está conectada a un cerebro! El dueño del sitio debe configurar el backend (ver mimi-worker.js) antes de que pueda chatear de verdad. 🎀"
   },
   ko: {
     modelPill: "미미 · 나의 고양이 친구",
@@ -588,7 +625,9 @@ const i18n = {
     newChatTitle: "새 채팅",
     errorMsg: "앗, 리본이 풀렸어! 서버에 문제가 생겼어요. 잠시 후 다시 시도해주세요. 🎀",
     languageName: "한국어",
-    noChatsYet: "이 언어로 된 채팅이 아직 없어요"
+    noChatsYet: "이 언어로 된 채팅이 아직 없어요",
+    deleteChat: "채팅 삭제",
+    notConfiguredMsg: "미미가 아직 두뇌에 연결되지 않았어요! 사이트 관리자가 백엔드(mimi-worker.js 참고)를 먼저 설정해야 진짜로 대화할 수 있어요. 🎀"
   }
 };
 
@@ -665,10 +704,41 @@ function renderHistory(){
   filtered.forEach(c => {
     const div = document.createElement('div');
     div.className = 'history-item' + (c.id === currentId ? ' active' : '');
-    div.textContent = c.title;
-    div.onclick = () => { currentId = c.id; renderHistory(); renderChat(); closeSidebarMobile(); };
+
+    const title = document.createElement('span');
+    title.className = 'history-item-title';
+    title.textContent = c.title;
+    title.onclick = () => { currentId = c.id; renderHistory(); renderChat(); closeSidebarMobile(); };
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'history-delete';
+    delBtn.setAttribute('aria-label', t('deleteChat'));
+    delBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0l-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6h16z"/></svg>';
+    delBtn.onclick = (e) => { e.stopPropagation(); deleteConversation(c.id); };
+
+    div.appendChild(title);
+    div.appendChild(delBtn);
     historyEl.appendChild(div);
   });
+}
+
+function deleteConversation(id){
+  const idx = conversations.findIndex(c => c.id === id);
+  if(idx === -1) return;
+  const wasActive = conversations[idx].id === currentId;
+  conversations.splice(idx, 1);
+
+  if(wasActive){
+    const nextInLang = conversations.find(c => c.lang === currentLang);
+    if(nextInLang){
+      currentId = nextInLang.id;
+    } else {
+      newConversation();
+      return;
+    }
+  }
+  renderHistory();
+  renderChat();
 }
 
 function renderChat(){
@@ -688,8 +758,11 @@ function appendBubble(role, text, animate=true){
   msg.className = 'msg ' + role;
   const avatar = document.createElement('div');
   avatar.className = 'avatar ' + role;
-  avatar.textContent = role === 'ai' ? '🎀' : 'You';
-  if(role === 'user') avatar.style.fontSize = '11px';
+  if(role === 'ai'){
+    avatar.textContent = '🎀';
+  } else {
+    avatar.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>';
+  }
   const bubble = document.createElement('div');
   bubble.className = 'bubble';
   bubble.textContent = text;
@@ -770,20 +843,21 @@ async function send(){
   const typingMsg = appendTyping();
 
   try{
+    if(API_ENDPOINT.includes('YOUR-SUBDOMAIN')){
+      throw new Error('NOT_CONFIGURED');
+    }
+
     const apiMessages = conv.messages.map(m => ({
       role: m.role === 'ai' ? 'assistant' : 'user',
       content: m.content
     }));
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch(API_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 1000,
         system: "You are Mimi, a warm, cheerful, kind AI companion with a cute cat-and-bow personality. Keep replies friendly, clear, and not overly long unless asked. Light, tasteful use of an occasional emoji like 🎀 or 🐾 is welcome but don't overdo it. Always respond in " + t('languageName') + ", regardless of what language the user writes in, unless they explicitly ask you to switch languages.",
-        messages: apiMessages,
-        stream: true
+        messages: apiMessages
       })
     });
 
@@ -825,7 +899,11 @@ async function send(){
   }catch(err){
     console.error(err);
     if(document.getElementById('typingMsg')) typingMsg.remove();
-    appendBubble('ai', t('errorMsg'));
+    if(err.message === 'NOT_CONFIGURED'){
+      appendBubble('ai', t('notConfiguredMsg'));
+    } else {
+      appendBubble('ai', t('errorMsg'));
+    }
   }
 }
 
