@@ -56,7 +56,7 @@ chatInput.addEventListener('keydown', (e) => {
 });
 
 function catAvatarSVG(size) {
-  return `<svg width="${size}" height="${size}" viewBox="0 0 120 110"><use href="#catIcon"></use></svg>`;
+  return `<img src="kitty-icon.png" width="${size}" height="${size}" alt="Kitty" />`;
 }
 
 function renderMessage(role, content) {
@@ -132,19 +132,38 @@ async function sendMessage(overrideText) {
       body: JSON.stringify({ messages }),
     });
 
-    if (!res.ok) throw new Error('Request failed');
+    const contentType = res.headers.get('content-type') || '';
+
+    // If there's no backend at all (static hosting like GitHub Pages, or
+    // this page opened directly as a file), the request either 404s or
+    // gets routed back to index.html — which is HTML, not JSON.
+    if (!contentType.includes('application/json')) {
+      throw new Error('NO_BACKEND');
+    }
 
     const data = await res.json();
+
+    if (!res.ok) {
+      console.error('API error:', data.error || res.status);
+      throw new Error('API_ERROR');
+    }
+
     removeTyping();
     const reply = data.reply || "Mrow? Something got tangled in my whiskers, try again?";
     messages.push({ role: 'assistant', content: reply });
     renderMessage('assistant', reply);
   } catch (err) {
     removeTyping();
-    const fallback = "Nya... my paws slipped and the message didn't send. Could you try again?";
+    let fallback;
+    if (err.message === 'NO_BACKEND') {
+      fallback = "I can't reach my brain from here — this page has no backend connected (e.g. it's on GitHub Pages, or opened as a local file). Deploy the full project to Vercel with ANTHROPIC_API_KEY set, then try me on that URL.";
+      console.error('No backend detected at /api/chat — deploy this project (with the api/ folder) to a host that runs serverless functions, like Vercel.');
+    } else {
+      fallback = "Nya... my paws slipped and the message didn't send. Could you try again?";
+      console.error(err);
+    }
     messages.push({ role: 'assistant', content: fallback });
     renderMessage('assistant', fallback);
-    console.error(err);
   } finally {
     setLoading(false);
   }
