@@ -308,7 +308,8 @@ html, body, .app { width:100%; height:100%; }
   font-size:15px;
   margin-top:2px;
 }
-.avatar.ai{ background: linear-gradient(135deg, var(--pink-300), var(--bow)); }
+.avatar.ai{ background: var(--pink-50); border:1px solid var(--pink-200); }
+.avatar.ai svg{ display:block; }
 .avatar.user{ background: var(--pink-200); color:var(--ink); }
 
 .msg-col{
