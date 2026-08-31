@@ -1,4 +1,6 @@
 // ---- Kitty Chat frontend logic ----
+// Frontend and backend both live in this same Vercel project, so a relative
+// path just works — no separate backend URL or CORS setup needed.
 
 const sidebar = document.getElementById('sidebar');
 const collapseBtn = document.getElementById('collapseBtn');
