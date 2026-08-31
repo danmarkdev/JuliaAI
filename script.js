@@ -39,7 +39,7 @@ const i18n = {
     attachTooBig: "That file is too big. Please attach images under " + MAX_ATTACHMENT_MB + "MB.",
     attachTooMany: "You can attach up to " + MAX_ATTACHMENTS + " images at once.",
     attachNotImage: "Julia AI can currently only see image files (screenshots, photos, etc).",
-    notConfiguredMsg: "Julia AI isn't connected to a brain yet! The site owner needs to set up the backend (see Mimi worker.js) before I can chat for real. 🐱"
+    notConfiguredMsg: "Julia AI isn't connected to a brain yet! The site owner needs to set up the backend (see Mimi worker.js) before I can chat for real. 🎀"
   },
   fil: {
     modelPill: "🎀 Julia AI 🎀 · ang kaibigan mong pusa",
@@ -60,7 +60,7 @@ const i18n = {
     languageName: "Filipino",
     noChatsYet: "Wala pang chat sa wikang ito",
     deleteChat: "Burahin ang chat",
-    notConfiguredMsg: "Hindi pa naka-connect si Julia AI sa utak niya! Kailangan munang i-set up ng may-ari ng site ang backend (tingnan ang Mimi worker.js) bago ako makapag-chat nang totoo. 🐱"
+    notConfiguredMsg: "Hindi pa naka-connect si Julia AI sa utak niya! Kailangan munang i-set up ng may-ari ng site ang backend (tingnan ang Mimi worker.js) bago ako makapag-chat nang totoo. 🎀"
   },
   ja: {
     modelPill: "🎀 ジュリアAI 🎀 ・あなたの猫の相棒",
@@ -102,7 +102,7 @@ const i18n = {
     languageName: "Español",
     noChatsYet: "Aún no hay chats en este idioma",
     deleteChat: "Eliminar chat",
-    notConfiguredMsg: "¡Julia AI todavía no está conectada a un cerebro! El dueño del sitio debe configurar el backend (ver Mimi worker.js) antes de que pueda chatear de verdad. 🐱"
+    notConfiguredMsg: "¡Julia AI todavía no está conectada a un cerebro! El dueño del sitio debe configurar el backend (ver Mimi worker.js) antes de que pueda chatear de verdad. 🎀"
   },
   ko: {
     modelPill: "🎀 줄리아 AI 🎀 · 나의 고양이 친구",
@@ -182,6 +182,9 @@ let currentId = null;
 let pendingAttachments = []; // [{id, name, mimeType, dataUrl, base64}]
 
 function uid(){ return Math.random().toString(36).slice(2,9); }
+
+// Compact version of the cat-and-bow logo mark, used as Julia's avatar in chat.
+const AVATAR_SVG = '<svg viewBox="0 0 100 100" width="20" height="20"><circle cx="50" cy="58" r="29" fill="#ffffff" stroke="#2a0518" stroke-width="4"/><path d="M27 36 Q22 16 39 25" fill="#ffffff" stroke="#2a0518" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M73 36 Q78 16 61 25" fill="#ffffff" stroke="#2a0518" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="34" cy="62" rx="5.5" ry="4.5" fill="#ffb3da" opacity="0.9"/><ellipse cx="66" cy="62" rx="5.5" ry="4.5" fill="#ffb3da" opacity="0.9"/><circle cx="39" cy="54" r="3" fill="#2a0518"/><circle cx="61" cy="54" r="3" fill="#2a0518"/><path d="M46 66 Q50 70 54 66" fill="none" stroke="#2a0518" stroke-width="3" stroke-linecap="round"/><g transform="translate(73,30) rotate(15)"><path d="M0 0 C-13 -10 -18 2 0 6 C-18 10 -13 22 0 12 C13 22 18 10 0 6 C18 2 13 -10 0 0 Z" fill="#fe019a" stroke="#2a0518" stroke-width="2.8" stroke-linejoin="round"/><circle cx="0" cy="6" r="3.8" fill="#ffffff"/></g></svg>';
 
 /* ---------------- Persistence (localStorage) ---------------- */
 
@@ -356,7 +359,7 @@ function appendBubble(role, text, idx, attachments, animate=true){
   if(role === 'ai'){
     avatar = document.createElement('div');
     avatar.className = 'avatar ai';
-    avatar.textContent = '🐱';
+    avatar.innerHTML = AVATAR_SVG;
   }
 
   const col = document.createElement('div');
@@ -453,7 +456,7 @@ function appendTyping(){
   msg.id = 'typingMsg';
   const avatar = document.createElement('div');
   avatar.className = 'avatar ai';
-  avatar.textContent = '🐱';
+  avatar.innerHTML = AVATAR_SVG;
   const col = document.createElement('div');
   col.className = 'msg-col';
   const bubble = document.createElement('div');
@@ -628,7 +631,7 @@ async function getAIResponse(conv){
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        system: "You are Julia AI, a warm, cheerful, kind AI companion with a cute cat-and-bow personality. You can see any images the user attaches (photos, screenshots, etc) — describe or use them naturally when relevant. Keep replies friendly, clear, and not overly long unless asked. Light, tasteful use of an occasional emoji like 🐱 or 🐾 is welcome but don't overdo it. Always respond in " + t('languageName') + ", regardless of what language the user writes in, unless they explicitly ask you to switch languages.",
+        system: "You are Julia AI, a warm, cheerful, kind AI companion with a cute cat-and-bow personality. You can see any images the user attaches (photos, screenshots, etc) — describe or use them naturally when relevant. Keep replies friendly, clear, and not overly long unless asked. Light, tasteful use of an occasional emoji like 🎀 or 🐾 is welcome but don't overdo it. Always respond in " + t('languageName') + ", regardless of what language the user writes in, unless they explicitly ask you to switch languages.",
         messages: apiMessages
       })
     });
