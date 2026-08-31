@@ -6,11 +6,14 @@
 const API_ENDPOINT = "https://mimi-chat-proxy.YOUR-SUBDOMAIN.workers.dev";
 // ---------------------------------------------------------------
 
+const MAX_ATTACHMENTS = 4;
+const MAX_ATTACHMENT_MB = 5;
+
 const i18n = {
   en: {
     modelPill: "🎀 Julia AI 🎀 · your kitty companion",
     heroTitle: "Hi, I'm 🎀 Julia AI 🎀",
-    heroSubtitle: "Ask me anything I'm listening with my whole bow.",
+    heroSubtitle: "Ask me anything — I'm listening with my whole bow.",
     chip1: "✨ Fun fact", chip2: "🎀 Write a poem", chip3: "📋 Plan my day", chip4: "💡 Explain simply",
     prompt1: "Tell me a fun fact I probably don't know",
     prompt2: "Write me a short, sweet poem about friendship",
@@ -26,6 +29,15 @@ const i18n = {
     languageName: "English",
     noChatsYet: "No chats in this language yet",
     deleteChat: "Delete chat",
+    renameChat: "Rename chat",
+    editMessage: "Edit message",
+    saveEdit: "Save & resend",
+    cancelEdit: "Cancel",
+    attachFile: "Attach a file",
+    removeAttachment: "Remove",
+    attachTooBig: "That file is too big — please attach images under " + MAX_ATTACHMENT_MB + "MB.",
+    attachTooMany: "You can attach up to " + MAX_ATTACHMENTS + " images at once.",
+    attachNotImage: "Julia AI can currently only see image files (screenshots, photos, etc).",
     notConfiguredMsg: "Julia AI isn't connected to a brain yet! The site owner needs to set up the backend (see Mimi worker.js) before I can chat for real. 🎀"
   },
   fil: {
@@ -127,6 +139,7 @@ function applyLanguage(){
   document.getElementById('sidebarFooter').textContent = t('footer');
   document.getElementById('disclaimerText').textContent = t('disclaimer');
   input.placeholder = t('placeholder');
+  attachBtn.setAttribute('aria-label', t('attachFile'));
   document.querySelectorAll('.chip').forEach(chip => {
     const key = chip.dataset.key;
     chip.textContent = t(key);
@@ -158,16 +171,22 @@ const sidebar = document.getElementById('sidebar');
 const menuBtn = document.getElementById('menuBtn');
 const overlay = document.getElementById('overlay');
 const newChatBtn = document.getElementById('newChatBtn');
+const attachBtn = document.getElementById('attachBtn');
+const fileInput = document.getElementById('fileInput');
+const attachPreview = document.getElementById('attachPreview');
 
-let conversations = [];      // {id, title, lang, messages:[{role, content}]}
+let conversations = [];      // {id, title, lang, customTitle, messages:[{role, content, attachments}]}
 let currentId = null;
+let pendingAttachments = []; // [{id, name, mimeType, dataUrl, base64}]
 
 function uid(){ return Math.random().toString(36).slice(2,9); }
 
 function newConversation(){
-  const conv = { id: uid(), title: t('newChatTitle'), lang: currentLang, messages: [] };
+  const conv = { id: uid(), title: t('newChatTitle'), lang: currentLang, customTitle: false, messages: [] };
   conversations.unshift(conv);
   currentId = conv.id;
+  pendingAttachments = [];
+  renderAttachPreview();
   renderHistory();
   renderChat();
 }
@@ -175,6 +194,8 @@ function newConversation(){
 function currentConv(){
   return conversations.find(c => c.id === currentId);
 }
+
+/* ---------------- History list: select / rename / delete ---------------- */
 
 function renderHistory(){
   historyEl.innerHTML = '';
@@ -196,16 +217,58 @@ function renderHistory(){
     title.textContent = c.title;
     title.onclick = () => { currentId = c.id; renderHistory(); renderChat(); closeSidebarMobile(); };
 
+    const actions = document.createElement('div');
+    actions.className = 'history-actions';
+
+    const renameBtn = document.createElement('button');
+    renameBtn.className = 'history-rename';
+    renameBtn.type = 'button';
+    renameBtn.setAttribute('aria-label', t('renameChat'));
+    renameBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>';
+    renameBtn.onclick = (e) => { e.stopPropagation(); startRenaming(div, c); };
+
     const delBtn = document.createElement('button');
     delBtn.className = 'history-delete';
+    delBtn.type = 'button';
     delBtn.setAttribute('aria-label', t('deleteChat'));
     delBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0l-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6h16z"/></svg>';
     delBtn.onclick = (e) => { e.stopPropagation(); deleteConversation(c.id); };
 
+    actions.appendChild(renameBtn);
+    actions.appendChild(delBtn);
     div.appendChild(title);
-    div.appendChild(delBtn);
+    div.appendChild(actions);
     historyEl.appendChild(div);
   });
+}
+
+function startRenaming(itemEl, conv){
+  itemEl.classList.add('renaming');
+  const titleSpan = itemEl.querySelector('.history-item-title');
+  const inputEl = document.createElement('input');
+  inputEl.type = 'text';
+  inputEl.className = 'history-item-input';
+  inputEl.value = conv.title;
+  itemEl.replaceChild(inputEl, titleSpan);
+  inputEl.focus();
+  inputEl.select();
+
+  let finished = false;
+  const commit = () => {
+    if(finished) return;
+    finished = true;
+    const val = inputEl.value.trim();
+    if(val){
+      conv.title = val;
+      conv.customTitle = true;
+    }
+    renderHistory();
+  };
+  inputEl.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter'){ e.preventDefault(); commit(); }
+    else if(e.key === 'Escape'){ e.preventDefault(); finished = true; renderHistory(); }
+  });
+  inputEl.addEventListener('blur', commit);
 }
 
 function deleteConversation(id){
@@ -227,6 +290,8 @@ function deleteConversation(id){
   renderChat();
 }
 
+/* ---------------- Chat rendering ---------------- */
+
 function renderChat(){
   const conv = currentConv();
   chatInner.innerHTML = '';
@@ -235,13 +300,27 @@ function renderChat(){
     return;
   }
   hero.style.display = 'none';
-  conv.messages.forEach(m => appendBubble(m.role, m.content, false));
+  conv.messages.forEach((m, idx) => appendBubble(m.role, m.content, idx, m.attachments, false));
   chatScroll.scrollTop = chatScroll.scrollHeight;
 }
 
-function appendBubble(role, text, animate=true){
+function attachmentsToHtmlGrid(attachments){
+  if(!attachments || attachments.length === 0) return null;
+  const grid = document.createElement('div');
+  grid.className = 'bubble-attachments';
+  attachments.forEach(a => {
+    const img = document.createElement('img');
+    img.src = a.dataUrl || ('data:' + a.mimeType + ';base64,' + a.data);
+    img.alt = a.name || 'attachment';
+    grid.appendChild(img);
+  });
+  return grid;
+}
+
+function appendBubble(role, text, idx, attachments, animate=true){
   const msg = document.createElement('div');
   msg.className = 'msg ' + role;
+
   const avatar = document.createElement('div');
   avatar.className = 'avatar ' + role;
   if(role === 'ai'){
@@ -249,14 +328,92 @@ function appendBubble(role, text, animate=true){
   } else {
     avatar.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>';
   }
+
+  const col = document.createElement('div');
+  col.className = 'msg-col';
+
   const bubble = document.createElement('div');
   bubble.className = 'bubble';
-  bubble.textContent = text;
+
+  const attGrid = attachmentsToHtmlGrid(attachments);
+  if(attGrid) bubble.appendChild(attGrid);
+
+  const textNode = document.createElement('span');
+  textNode.textContent = text;
+  bubble.appendChild(textNode);
+
+  col.appendChild(bubble);
+
+  // Only the user's own messages can be edited (and only once we know their index).
+  if(role === 'user' && typeof idx === 'number'){
+    const tools = document.createElement('div');
+    tools.className = 'msg-tools';
+    const editBtn = document.createElement('button');
+    editBtn.className = 'msg-edit-btn';
+    editBtn.type = 'button';
+    editBtn.setAttribute('aria-label', t('editMessage'));
+    editBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>';
+    editBtn.onclick = () => beginEditMessage(idx, col, bubble);
+    tools.appendChild(editBtn);
+    col.appendChild(tools);
+  }
+
   msg.appendChild(avatar);
-  msg.appendChild(bubble);
+  msg.appendChild(col);
   if(!animate) msg.style.animation = 'none';
   chatInner.appendChild(msg);
   return bubble;
+}
+
+function beginEditMessage(idx, col, bubble){
+  const conv = currentConv();
+  if(!conv) return;
+  const original = conv.messages[idx];
+  if(!original) return;
+
+  bubble.style.display = 'none';
+
+  const box = document.createElement('div');
+  box.className = 'edit-box';
+  const textarea = document.createElement('textarea');
+  textarea.value = original.content;
+  box.appendChild(textarea);
+
+  const actions = document.createElement('div');
+  actions.className = 'edit-box-actions';
+  const cancelBtn = document.createElement('button');
+  cancelBtn.type = 'button';
+  cancelBtn.className = 'edit-cancel-btn';
+  cancelBtn.textContent = t('cancelEdit');
+  cancelBtn.onclick = () => { box.remove(); bubble.style.display = ''; };
+  const saveBtn = document.createElement('button');
+  saveBtn.type = 'button';
+  saveBtn.className = 'edit-save-btn';
+  saveBtn.textContent = t('saveEdit');
+  saveBtn.onclick = () => commitEditMessage(idx, textarea.value);
+  actions.appendChild(cancelBtn);
+  actions.appendChild(saveBtn);
+  box.appendChild(actions);
+
+  col.insertBefore(box, bubble);
+  textarea.focus();
+  textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+}
+
+function commitEditMessage(idx, newText){
+  const text = newText.trim();
+  if(!text) return;
+  const conv = currentConv();
+  if(!conv) return;
+
+  // Update the edited message, then drop everything that came after it
+  // (its old AI reply and any later turns), since the conversation branches here.
+  conv.messages[idx].content = text;
+  conv.messages = conv.messages.slice(0, idx + 1);
+
+  renderChat();
+  renderHistory();
+  getAIResponse(conv);
 }
 
 function appendTyping(){
@@ -266,15 +423,99 @@ function appendTyping(){
   const avatar = document.createElement('div');
   avatar.className = 'avatar ai';
   avatar.textContent = '🎀';
+  const col = document.createElement('div');
+  col.className = 'msg-col';
   const bubble = document.createElement('div');
   bubble.className = 'bubble';
   bubble.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
+  col.appendChild(bubble);
   msg.appendChild(avatar);
-  msg.appendChild(bubble);
+  msg.appendChild(col);
   chatInner.appendChild(msg);
   chatScroll.scrollTop = chatScroll.scrollHeight;
   return msg;
 }
+
+/* ---------------- Attachments (the "+" button) ---------------- */
+
+attachBtn.addEventListener('click', () => fileInput.click());
+
+fileInput.addEventListener('change', async () => {
+  const files = Array.from(fileInput.files || []);
+  fileInput.value = ''; // allow re-selecting the same file later
+
+  for(const file of files){
+    if(pendingAttachments.length >= MAX_ATTACHMENTS){
+      appendSystemNotice(t('attachTooMany'));
+      break;
+    }
+    if(!file.type.startsWith('image/')){
+      appendSystemNotice(t('attachNotImage'));
+      continue;
+    }
+    if(file.size > MAX_ATTACHMENT_MB * 1024 * 1024){
+      appendSystemNotice(t('attachTooBig'));
+      continue;
+    }
+    try{
+      const dataUrl = await readFileAsDataUrl(file);
+      const base64 = dataUrl.split(',')[1] || '';
+      pendingAttachments.push({
+        id: uid(),
+        name: file.name,
+        mimeType: file.type,
+        dataUrl,
+        base64
+      });
+    }catch(e){ console.error('Failed to read file', e); }
+  }
+  renderAttachPreview();
+  sendBtn.disabled = input.value.trim().length === 0 && pendingAttachments.length === 0;
+});
+
+function readFileAsDataUrl(file){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderAttachPreview(){
+  attachPreview.innerHTML = '';
+  pendingAttachments.forEach(a => {
+    const chip = document.createElement('div');
+    chip.className = 'attach-chip';
+    const img = document.createElement('img');
+    img.src = a.dataUrl;
+    img.alt = a.name;
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'attach-chip-remove';
+    removeBtn.setAttribute('aria-label', t('removeAttachment'));
+    removeBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+    removeBtn.onclick = () => {
+      pendingAttachments = pendingAttachments.filter(x => x.id !== a.id);
+      renderAttachPreview();
+      sendBtn.disabled = input.value.trim().length === 0 && pendingAttachments.length === 0;
+    };
+    chip.appendChild(img);
+    chip.appendChild(removeBtn);
+    attachPreview.appendChild(chip);
+  });
+}
+
+// A tiny inline system-style notice for attachment problems (too big, wrong type, etc).
+function appendSystemNotice(text){
+  const conv = currentConv();
+  if(!conv) return;
+  hero.style.display = 'none';
+  appendBubble('ai', text, undefined, undefined, true);
+  chatScroll.scrollTop = chatScroll.scrollHeight;
+}
+
+/* ---------------- Composer ---------------- */
 
 function autoResize(){
   input.style.height = 'auto';
@@ -282,7 +523,7 @@ function autoResize(){
 }
 input.addEventListener('input', () => {
   autoResize();
-  sendBtn.disabled = input.value.trim().length === 0;
+  sendBtn.disabled = input.value.trim().length === 0 && pendingAttachments.length === 0;
 });
 input.addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !e.shiftKey){
@@ -306,26 +547,36 @@ menuBtn.addEventListener('click', () => { sidebar.classList.add('open'); overlay
 overlay.addEventListener('click', closeSidebarMobile);
 function closeSidebarMobile(){ sidebar.classList.remove('open'); overlay.classList.remove('show'); }
 
+/* ---------------- Sending & AI response ---------------- */
+
 async function send(){
   const text = input.value.trim();
-  if(!text) return;
+  const attachments = pendingAttachments.map(a => ({ mimeType: a.mimeType, data: a.base64, dataUrl: a.dataUrl, name: a.name }));
+  if(!text && attachments.length === 0) return;
+
   let conv = currentConv();
   if(!conv){ newConversation(); conv = currentConv(); }
 
-  if(conv.messages.length === 0){
-    conv.title = text.slice(0, 32) + (text.length > 32 ? '…' : '');
+  if(conv.messages.length === 0 && !conv.customTitle){
+    const titleSource = text || (attachments[0] && attachments[0].name) || t('newChatTitle');
+    conv.title = titleSource.slice(0, 32) + (titleSource.length > 32 ? '…' : '');
     conv.lang = currentLang;
   }
 
   hero.style.display = 'none';
-  conv.messages.push({ role:'user', content:text });
-  appendBubble('user', text);
+  conv.messages.push({ role:'user', content:text, attachments });
   input.value = '';
   autoResize();
+  pendingAttachments = [];
+  renderAttachPreview();
   sendBtn.disabled = true;
-  chatScroll.scrollTop = chatScroll.scrollHeight;
+  renderChat();
   renderHistory();
 
+  await getAIResponse(conv);
+}
+
+async function getAIResponse(conv){
   const typingMsg = appendTyping();
 
   try{
@@ -337,14 +588,15 @@ async function send(){
     // 'ai' role through and let the worker translate it.
     const apiMessages = conv.messages.map(m => ({
       role: m.role === 'ai' ? 'assistant' : 'user',
-      content: m.content
+      content: m.content,
+      attachments: (m.attachments || []).map(a => ({ mimeType: a.mimeType, data: a.data }))
     }));
 
     const response = await fetch(API_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        system: "You are Julia AI, a warm, cheerful, kind AI companion with a cute cat-and-bow personality. Keep replies friendly, clear, and not overly long unless asked. Light, tasteful use of an occasional emoji like 🎀 or 🐾 is welcome but don't overdo it. Always respond in " + t('languageName') + ", regardless of what language the user writes in, unless they explicitly ask you to switch languages.",
+        system: "You are Julia AI, a warm, cheerful, kind AI companion with a cute cat-and-bow personality. You can see any images the user attaches (photos, screenshots, etc) — describe or use them naturally when relevant. Keep replies friendly, clear, and not overly long unless asked. Light, tasteful use of an occasional emoji like 🎀 or 🐾 is welcome but don't overdo it. Always respond in " + t('languageName') + ", regardless of what language the user writes in, unless they explicitly ask you to switch languages.",
         messages: apiMessages
       })
     });
