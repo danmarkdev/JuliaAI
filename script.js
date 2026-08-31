@@ -13,7 +13,7 @@ const i18n = {
   en: {
     modelPill: "🎀 Julia AI 🎀 · your kitty companion",
     heroTitle: "Hi, I'm 🎀 Julia AI 🎀",
-    heroSubtitle: "Ask me anything — I'm listening with my whole bow.",
+    heroSubtitle: "Ask me anything I'm listening with my whole bow.",
     chip1: "✨ Fun fact", chip2: "🎀 Write a poem", chip3: "📋 Plan my day", chip4: "💡 Explain simply",
     prompt1: "Tell me a fun fact I probably don't know",
     prompt2: "Write me a short, sweet poem about friendship",
