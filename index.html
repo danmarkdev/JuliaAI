@@ -8,18 +8,20 @@
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --pink-50:#fff5f8;
-    --pink-100:#ffe4ec;
-    --pink-200:#ffc9dc;
-    --pink-300:#ffa2c1;
-    --bow:#ff2f6e;
-    --bow-dark:#e0134f;
-    --cream:#fffaf9;
-    --ink:#3a2530;
-    --ink-soft:#8a6b78;
-    --line:#ffd6e4;
-    --white:#ffffff;
-    --shadow: 0 8px 24px rgba(255,47,110,0.12);
+    /* dark pink theme */
+    --pink-50:#2a1420;
+    --pink-100:#3a1a2c;
+    --pink-200:#54233d;
+    --pink-300:#7d2f52;
+    --bow:#ff3d7d;
+    --bow-dark:#ff6fa3;
+    --cream:#170c12;
+    --ink:#fbe6ee;
+    --ink-soft:#c98aa3;
+    --line:#3d1e2e;
+    --white:#241019;
+    --surface:#2c1420;
+    --shadow: 0 8px 24px rgba(255,61,125,0.28);
   }
   *{box-sizing:border-box;}
   html,body{height:100%;}
@@ -44,7 +46,7 @@
   .sidebar{
     flex: 0 0 272px;
     width:272px;
-    background: var(--white);
+    background: var(--surface);
     border-right: 1px solid var(--line);
     display:flex;
     flex-direction:column;
@@ -206,12 +208,13 @@
     outline:none;
     appearance:none;
     -webkit-appearance:none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e0134f' stroke-width='2.6' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ff6fa3' stroke-width='2.6' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
     background-repeat:no-repeat;
     background-position: right 8px center;
     background-size:13px;
     padding-right:28px;
   }
+  .lang-select option{ background: var(--surface); color: var(--ink); }
 
   .chat-scroll{
     flex:1;
@@ -245,7 +248,7 @@
     font-size:34px;
     line-height:1.25;
     margin:0 0 6px;
-    background: linear-gradient(100deg, var(--bow-dark), #ff7fa8 60%, #ffb3c9);
+    background: linear-gradient(100deg, var(--bow-dark), #ff8fbc 60%, #ffc2da);
     -webkit-background-clip: text;
     background-clip:text;
     color:transparent;
@@ -261,7 +264,7 @@
     gap:10px;
   }
   .chip{
-    background: var(--white);
+    background: var(--surface);
     border:1px solid var(--pink-200);
     color:var(--ink);
     font-family:'Nunito';
@@ -293,8 +296,8 @@
     font-size:15px;
     margin-top:2px;
   }
-  .avatar.ai{ background: linear-gradient(135deg, var(--pink-200), var(--bow)); }
-  .avatar.user{ background: var(--ink); color:white; }
+  .avatar.ai{ background: linear-gradient(135deg, var(--pink-300), var(--bow)); }
+  .avatar.user{ background: var(--pink-200); color:var(--ink); }
 
   .bubble{
     max-width: 78%;
@@ -306,12 +309,13 @@
     word-wrap:break-word;
   }
   .msg.user .bubble{
-    background: linear-gradient(135deg, var(--bow), #ff5c8a);
-    color:white;
+    background: linear-gradient(135deg, var(--bow), #ff6fa3);
+    color:#1a0b12;
+    font-weight:600;
     border-bottom-right-radius:6px;
   }
   .msg.ai .bubble{
-    background: var(--white);
+    background: var(--surface);
     border:1px solid var(--pink-100);
     color:var(--ink);
     border-bottom-left-radius:6px;
@@ -345,7 +349,7 @@
     display:flex;
     align-items:flex-end;
     gap:10px;
-    background: var(--white);
+    background: var(--surface);
     border:1.5px solid var(--pink-200);
     border-radius:26px;
     padding: 8px 8px 8px 18px;
@@ -368,13 +372,13 @@
     background:transparent;
     color:var(--ink);
   }
-  .composer textarea::placeholder{ color:#c98ca3; }
+  .composer textarea::placeholder{ color:#7d4c60; }
   .send-btn{
     width:42px;height:42px;
     border-radius:50%;
     border:none;
-    background: linear-gradient(135deg, var(--bow), var(--bow-dark));
-    color:white;
+    background: linear-gradient(135deg, var(--bow), var(--pink-300));
+    color:#1a0b12;
     display:flex;align-items:center;justify-content:center;
     cursor:pointer;
     flex-shrink:0;
@@ -404,13 +408,13 @@
     .sidebar{
       position:fixed; top:0; left:0; bottom:0; width:260px;
       transform: translateX(-100%);
-      box-shadow: 12px 0 30px rgba(0,0,0,.08);
+      box-shadow: 12px 0 30px rgba(0,0,0,.5);
     }
     .sidebar.open{ transform: translateX(0); }
     .menu-btn{ display:flex; }
     .overlay{
       display:none;
-      position:fixed; inset:0; background:rgba(58,37,48,.25); z-index:15;
+      position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:15;
     }
     .overlay.show{ display:block; }
     .hero{ height: calc(100vh - 200px); }
@@ -431,17 +435,17 @@
   <aside class="sidebar" id="sidebar">
     <div class="brand">
       <svg class="brand-mark" viewBox="0 0 100 100">
-        <circle cx="50" cy="56" r="30" fill="#ffffff" stroke="#3a2530" stroke-width="4"/>
-        <path d="M28 34 Q24 14 40 24" fill="#ffffff" stroke="#3a2530" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M72 34 Q76 14 60 24" fill="#ffffff" stroke="#3a2530" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="35" cy="60" r="5" fill="#ffb9d1" opacity="0.8"/>
-        <circle cx="65" cy="60" r="5" fill="#ffb9d1" opacity="0.8"/>
-        <path d="M36 52 Q40 47 44 52" fill="none" stroke="#3a2530" stroke-width="3.4" stroke-linecap="round"/>
-        <path d="M56 52 Q60 47 64 52" fill="none" stroke="#3a2530" stroke-width="3.4" stroke-linecap="round"/>
-        <path d="M46 64 Q50 68 54 64" fill="none" stroke="#3a2530" stroke-width="3.2" stroke-linecap="round"/>
+        <circle cx="50" cy="56" r="30" fill="#241019" stroke="#fbe6ee" stroke-width="4"/>
+        <path d="M28 34 Q24 14 40 24" fill="#241019" stroke="#fbe6ee" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M72 34 Q76 14 60 24" fill="#241019" stroke="#fbe6ee" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="35" cy="60" r="5" fill="#ff3d7d" opacity="0.8"/>
+        <circle cx="65" cy="60" r="5" fill="#ff3d7d" opacity="0.8"/>
+        <path d="M36 52 Q40 47 44 52" fill="none" stroke="#fbe6ee" stroke-width="3.4" stroke-linecap="round"/>
+        <path d="M56 52 Q60 47 64 52" fill="none" stroke="#fbe6ee" stroke-width="3.4" stroke-linecap="round"/>
+        <path d="M46 64 Q50 68 54 64" fill="none" stroke="#fbe6ee" stroke-width="3.2" stroke-linecap="round"/>
         <g transform="translate(74,32) rotate(18)">
-          <path d="M0 -6 L-11 -11 L-9 0 L-11 11 L0 6 L11 11 L9 0 L11 -11 Z" fill="#ff2f6e" stroke="#3a2530" stroke-width="3" stroke-linejoin="round"/>
-          <circle cx="0" cy="0" r="3.2" fill="#ffe4ec"/>
+          <path d="M0 -6 L-11 -11 L-9 0 L-11 11 L0 6 L11 11 L9 0 L11 -11 Z" fill="#ff3d7d" stroke="#fbe6ee" stroke-width="3" stroke-linejoin="round"/>
+          <circle cx="0" cy="0" r="3.2" fill="#241019"/>
         </g>
       </svg>
       <span class="brand-name">Mimi Chat</span>
@@ -461,7 +465,7 @@
   <main class="main">
     <div class="topbar">
       <button class="menu-btn" id="menuBtn" aria-label="Toggle menu">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3a2530" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fbe6ee" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
       <span class="model-pill" id="modelPill">Mimi · your kitty companion</span>
       <div class="topbar-right">
@@ -479,17 +483,17 @@
     <div class="chat-scroll" id="chatScroll">
       <div class="hero" id="hero">
         <svg class="hero-mark" viewBox="0 0 100 100">
-          <circle cx="50" cy="56" r="30" fill="#ffffff" stroke="#3a2530" stroke-width="4"/>
-          <path d="M28 34 Q24 14 40 24" fill="#ffffff" stroke="#3a2530" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M72 34 Q76 14 60 24" fill="#ffffff" stroke="#3a2530" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-          <circle cx="35" cy="60" r="5" fill="#ffb9d1" opacity="0.8"/>
-          <circle cx="65" cy="60" r="5" fill="#ffb9d1" opacity="0.8"/>
-          <path d="M36 52 Q40 47 44 52" fill="none" stroke="#3a2530" stroke-width="3.4" stroke-linecap="round"/>
-          <path d="M56 52 Q60 47 64 52" fill="none" stroke="#3a2530" stroke-width="3.4" stroke-linecap="round"/>
-          <path d="M46 64 Q50 68 54 64" fill="none" stroke="#3a2530" stroke-width="3.2" stroke-linecap="round"/>
+          <circle cx="50" cy="56" r="30" fill="#241019" stroke="#fbe6ee" stroke-width="4"/>
+          <path d="M28 34 Q24 14 40 24" fill="#241019" stroke="#fbe6ee" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M72 34 Q76 14 60 24" fill="#241019" stroke="#fbe6ee" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="35" cy="60" r="5" fill="#ff3d7d" opacity="0.8"/>
+          <circle cx="65" cy="60" r="5" fill="#ff3d7d" opacity="0.8"/>
+          <path d="M36 52 Q40 47 44 52" fill="none" stroke="#fbe6ee" stroke-width="3.4" stroke-linecap="round"/>
+          <path d="M56 52 Q60 47 64 52" fill="none" stroke="#fbe6ee" stroke-width="3.4" stroke-linecap="round"/>
+          <path d="M46 64 Q50 68 54 64" fill="none" stroke="#fbe6ee" stroke-width="3.2" stroke-linecap="round"/>
           <g transform="translate(74,32) rotate(18)">
-            <path d="M0 -6 L-11 -11 L-9 0 L-11 11 L0 6 L11 11 L9 0 L11 -11 Z" fill="#ff2f6e" stroke="#3a2530" stroke-width="3" stroke-linejoin="round"/>
-            <circle cx="0" cy="0" r="3.2" fill="#ffe4ec"/>
+            <path d="M0 -6 L-11 -11 L-9 0 L-11 11 L0 6 L11 11 L9 0 L11 -11 Z" fill="#ff3d7d" stroke="#fbe6ee" stroke-width="3" stroke-linejoin="round"/>
+            <circle cx="0" cy="0" r="3.2" fill="#241019"/>
           </g>
         </svg>
         <h1 id="heroTitle">Hi, I'm Mimi</h1>
@@ -518,7 +522,8 @@
 
 <script>
 // ---------------------------------------------------------------
-// PASTE YOUR CLOUDFLARE WORKER URL HERE (see mimi-worker.js setup steps)
+// PASTE YOUR CLOUDFLARE WORKER URL HERE (see mimi-worker.js setup steps).
+// This worker calls Google Gemini on the backend so your API key stays secret.
 // e.g. "https://mimi-chat-proxy.your-subdomain.workers.dev"
 const API_ENDPOINT = "https://mimi-chat-proxy.YOUR-SUBDOMAIN.workers.dev";
 // ---------------------------------------------------------------
@@ -653,6 +658,8 @@ function applyLanguage(){
 document.getElementById('langSelect').addEventListener('change', (e) => {
   currentLang = e.target.value;
   applyLanguage();
+  // Each language keeps its own separate list of conversations.
+  // Jump to that language's most recent chat, or start a fresh one.
   const existing = conversations.find(c => c.lang === currentLang);
   if(existing){
     currentId = existing.id;
@@ -674,7 +681,7 @@ const menuBtn = document.getElementById('menuBtn');
 const overlay = document.getElementById('overlay');
 const newChatBtn = document.getElementById('newChatBtn');
 
-let conversations = [];      // {id, title, messages:[{role, content}]}
+let conversations = [];      // {id, title, lang, messages:[{role, content}]}
 let currentId = null;
 
 function uid(){ return Math.random().toString(36).slice(2,9); }
@@ -693,6 +700,7 @@ function currentConv(){
 
 function renderHistory(){
   historyEl.innerHTML = '';
+  // Only show conversations that belong to the language currently selected.
   const filtered = conversations.filter(c => c.lang === currentLang);
   if(filtered.length === 0){
     const empty = document.createElement('div');
@@ -847,6 +855,8 @@ async function send(){
       throw new Error('NOT_CONFIGURED');
     }
 
+    // Gemini expects role "user" or "model" — we send our internal
+    // 'ai' role through and let the worker translate it.
     const apiMessages = conv.messages.map(m => ({
       role: m.role === 'ai' ? 'assistant' : 'user',
       content: m.content
@@ -885,8 +895,11 @@ async function send(){
         if(!dataStr || dataStr === '[DONE]') continue;
         try{
           const evt = JSON.parse(dataStr);
-          if(evt.type === 'content_block_delta' && evt.delta && evt.delta.type === 'text_delta'){
-            fullText += evt.delta.text;
+          // Gemini streamGenerateContent (alt=sse) shape:
+          // { candidates: [ { content: { parts: [ { text: "..." } ] } } ] }
+          const piece = evt?.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
+          if(piece){
+            fullText += piece;
             bubble.textContent = fullText;
             chatScroll.scrollTop = chatScroll.scrollHeight;
           }
