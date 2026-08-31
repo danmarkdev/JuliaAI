@@ -1,12 +1,5 @@
-/**
- * Julia AI Chat — Cloudflare Worker proxy (Gemini edition)
- * ------------------------------------------------------
- * Keeps your Google Gemini API key secret on the server side, so it's
- * never exposed in the browser. Your GitHub Pages site calls THIS worker,
- * and the worker calls Gemini on its behalf.
- */
 const ALLOWED_ORIGIN = "*"; // e.g. "https://danmarkdev.github.io" for production
-const GEMINI_MODEL = "gemini-3.6-flash";
+const GEMINI_MODEL = "gemini-2.5-flash-lite"; // free tier: ~1,000 requests/day
 const MAX_ATTACHMENTS_PER_MESSAGE = 4;
 
 export default {
@@ -50,4 +43,53 @@ export default {
           if (att && att.data && att.mimeType && String(att.mimeType).startsWith("image/")) {
             parts.push({
               inlineData: {
-                mimeType:
+                mimeType: String(att.mimeType),
+                data: String(att.data),
+              },
+            });
+          }
+        }
+      }
+
+      if (parts.length === 0) parts.push({ text: "" });
+
+      return {
+        role: m.role === "assistant" || m.role === "ai" || m.role === "model" ? "model" : "user",
+        parts,
+      };
+    });
+
+    const geminiBody = {
+      contents,
+      systemInstruction: systemText ? { parts: [{ text: systemText }] } : undefined,
+      generationConfig: {
+        maxOutputTokens: 1024,
+        temperature: 0.9,
+      },
+    };
+    const url =
+      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:streamGenerateContent?alt=sse`;
+    try {
+      const geminiResponse = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": env.GEMINI_API_KEY,
+        },
+        body: JSON.stringify(geminiBody),
+      });
+      return new Response(geminiResponse.body, {
+        status: geminiResponse.status,
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "text/event-stream",
+        },
+      });
+    } catch (err) {
+      return new Response(
+        JSON.stringify({ error: "Upstream request failed", detail: err.message }),
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+  },
+};
