@@ -1,17 +1,17 @@
 :root{
-  /* dark theme built around #FE019A (sampled from user's swatch) */
-  --pink-50:#2a0a1c;
-  --pink-100:#3c0f28;
-  --pink-200:#5a1740;
-  --pink-300:#84205e;
+  /* dark theme built around #FE019A (sampled from user's swatch) — pushed more saturated/magenta throughout */
+  --pink-50:#35061f;
+  --pink-100:#4a0929;
+  --pink-200:#70103d;
+  --pink-300:#a3145a;
   --bow:#fe019a;
-  --bow-dark:#ff5cbf;
-  --cream:#15060e;
-  --ink:#ffe3f4;
-  --ink-soft:#c77aa8;
-  --line:#3a1128;
-  --surface:#220a17;
-  --shadow: 0 8px 24px rgba(254,1,154,0.32);
+  --bow-dark:#ff4fb6;
+  --cream:#1a0210;
+  --ink:#ffe0f2;
+  --ink-soft:#d179ae;
+  --line:#4a0e2c;
+  --surface:#2a071a;
+  --shadow: 0 8px 28px rgba(254,1,154,0.42);
 }
 *{box-sizing:border-box;}
 html,body{height:100%;}
