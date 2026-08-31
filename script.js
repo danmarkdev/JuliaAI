@@ -1,4 +1,4 @@
- // ---------------------------------------------------------------
+// ---------------------------------------------------------------
 // PASTE YOUR CLOUDFLARE WORKER URL HERE (see Mimi worker.js setup steps).
 // The worker holds your Gemini API key server-side so it never
 // appears in this file or anywhere the browser can see it.
@@ -13,7 +13,7 @@ const i18n = {
   en: {
     modelPill: "🎀 Julia AI 🎀 · your kitty companion",
     heroTitle: "Hi, I'm 🎀 Julia AI 🎀",
-    heroSubtitle: "Ask me anything I'm listening with my whole bow.",
+    heroSubtitle: "Ask me anything, I'm listening with my whole bow.",
     chip1: "✨ Fun fact", chip2: "🎀 Write a poem", chip3: "📋 Plan my day", chip4: "💡 Explain simply",
     prompt1: "Tell me a fun fact I probably don't know",
     prompt2: "Write me a short, sweet poem about friendship",
@@ -35,7 +35,7 @@ const i18n = {
     cancelEdit: "Cancel",
     attachFile: "Attach a file",
     removeAttachment: "Remove",
-    attachTooBig: "That file is too big — please attach images under " + MAX_ATTACHMENT_MB + "MB.",
+    attachTooBig: "That file is too big. Please attach images under " + MAX_ATTACHMENT_MB + "MB.",
     attachTooMany: "You can attach up to " + MAX_ATTACHMENTS + " images at once.",
     attachNotImage: "Julia AI can currently only see image files (screenshots, photos, etc).",
     notConfiguredMsg: "Julia AI isn't connected to a brain yet! The site owner needs to set up the backend (see Mimi worker.js) before I can chat for real. 🎀"
@@ -43,7 +43,7 @@ const i18n = {
   fil: {
     modelPill: "🎀 Julia AI 🎀 · ang kaibigan mong pusa",
     heroTitle: "Hi, ako si Julia AI",
-    heroSubtitle: "Itanong mo kahit ano nakikinig ako nang buong-buo.",
+    heroSubtitle: "Itanong mo kahit ano, nakikinig ako nang buong-buo.",
     chip1: "✨ Kwentong kaalaman", chip2: "🎀 Sumulat ng tula", chip3: "📋 Planuhin ang araw ko", chip4: "💡 Ipaliwanag nang simple",
     prompt1: "Sabihan mo ako ng kawili-wiling kaalaman na hindi ko pa alam",
     prompt2: "Sumulat ka ng maikli at malambing na tula tungkol sa pagkakaibigan",
@@ -85,7 +85,7 @@ const i18n = {
   es: {
     modelPill: "🎀 Julia AI 🎀 · tu amiga gatita",
     heroTitle: "Hola, soy Julia AI",
-    heroSubtitle: "Pregúntame lo que quieras  te escucho con todo mi lazo.",
+    heroSubtitle: "Pregúntame lo que quieras, te escucho con todo mi lazo.",
     chip1: "✨ Dato curioso", chip2: "🎀 Escribe un poema", chip3: "📋 Planea mi día", chip4: "💡 Explica algo simple",
     prompt1: "Cuéntame un dato curioso que probablemente no conozca",
     prompt2: "Escríbeme un poema corto y dulce sobre la amistad",
@@ -106,7 +106,7 @@ const i18n = {
   ko: {
     modelPill: "🎀 줄리아 AI 🎀 · 나의 고양이 친구",
     heroTitle: "안녕, 나는 줄리아 AI야",
-    heroSubtitle: "무엇이든 물어봐 — 리본을 쫑긋 세우고 듣고 있을게.",
+    heroSubtitle: "무엇이든 물어봐, 리본을 쫑긋 세우고 듣고 있을게.",
     chip1: "✨ 재미있는 사실", chip2: "🎀 시 써주기", chip3: "📋 하루 계획", chip4: "💡 쉽게 설명하기",
     prompt1: "내가 잘 모를 것 같은 재미있는 사실 하나 알려줘",
     prompt2: "우정에 대한 짧고 따뜻한 시를 써줘",
@@ -637,7 +637,7 @@ async function getAIResponse(conv){
       }
     }
 
-    conv.messages.push({ role:'ai', content: fullText || "Sorry, I didn't quite catch that — could you try again?" });
+    conv.messages.push({ role:'ai', content: fullText || "Sorry, I didn't quite catch that. Could you try again?" });
 
   }catch(err){
     console.error(err);
