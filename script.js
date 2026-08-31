@@ -1,4 +1,4 @@
-// ---------------------------------------------------------------
+ // ---------------------------------------------------------------
 // PASTE YOUR CLOUDFLARE WORKER URL HERE (see Mimi worker.js setup steps).
 // The worker holds your Gemini API key server-side so it never
 // appears in this file or anywhere the browser can see it.
@@ -43,7 +43,7 @@ const i18n = {
   fil: {
     modelPill: "🎀 Julia AI 🎀 · ang kaibigan mong pusa",
     heroTitle: "Hi, ako si Julia AI",
-    heroSubtitle: "Itanong mo kahit ano — nakikinig ako nang buong-buo.",
+    heroSubtitle: "Itanong mo kahit ano nakikinig ako nang buong-buo.",
     chip1: "✨ Kwentong kaalaman", chip2: "🎀 Sumulat ng tula", chip3: "📋 Planuhin ang araw ko", chip4: "💡 Ipaliwanag nang simple",
     prompt1: "Sabihan mo ako ng kawili-wiling kaalaman na hindi ko pa alam",
     prompt2: "Sumulat ka ng maikli at malambing na tula tungkol sa pagkakaibigan",
@@ -85,7 +85,7 @@ const i18n = {
   es: {
     modelPill: "🎀 Julia AI 🎀 · tu amiga gatita",
     heroTitle: "Hola, soy Julia AI",
-    heroSubtitle: "Pregúntame lo que quieras — te escucho con todo mi lazo.",
+    heroSubtitle: "Pregúntame lo que quieras  te escucho con todo mi lazo.",
     chip1: "✨ Dato curioso", chip2: "🎀 Escribe un poema", chip3: "📋 Planea mi día", chip4: "💡 Explica algo simple",
     prompt1: "Cuéntame un dato curioso que probablemente no conozca",
     prompt2: "Escríbeme un poema corto y dulce sobre la amistad",
