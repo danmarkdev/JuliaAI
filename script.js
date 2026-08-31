@@ -8,24 +8,25 @@ const API_ENDPOINT = "https://julia-ai-chat-proxy.kdanmarkrosalejos.workers.dev"
 
 const MAX_ATTACHMENTS = 4;
 const MAX_ATTACHMENT_MB = 5;
+const STORAGE_KEY = 'juliaAiConversations';
 
 const i18n = {
   en: {
-    modelPill: "🎀 Julia AI 🎀 · your kitty companion",
-    heroTitle: "Hi, I'm 🎀 Julia AI 🎀",
+    modelPill: "🐱 Julia AI 🐱 · your kitty companion",
+    heroTitle: "Hi, I'm 🐱 Julia AI 🐱",
     heroSubtitle: "Ask me anything, I'm listening with my whole bow.",
-    chip1: "✨ Fun fact", chip2: "🎀 Write a poem", chip3: "📋 Plan my day", chip4: "💡 Explain simply",
+    chip1: "✨ Fun fact", chip2: "🐱 Write a poem", chip3: "📋 Plan my day", chip4: "💡 Explain simply",
     prompt1: "Tell me a fun fact I probably don't know",
     prompt2: "Write me a short, sweet poem about friendship",
     prompt3: "Help me plan a cozy Sunday",
     prompt4: "Explain something complicated in a simple, friendly way: how does the internet work?",
     newChat: "New chat",
     recent: "Recent",
-    footer: "Made with 🎀 for you",
+    footer: "Made with 🐱 for you",
     placeholder: "Message Julia AI...",
     disclaimer: "Julia AI can make mistakes. Double-check important info.",
     newChatTitle: "New chat",
-    errorMsg: "Oops, my bow slipped! Something went wrong reaching the server. Please try again in a moment. 🎀",
+    errorMsg: "Oops, my bow slipped! Something went wrong reaching the server. Please try again in a moment. 🐱",
     languageName: "English",
     noChatsYet: "No chats in this language yet",
     deleteChat: "Delete chat",
@@ -38,91 +39,91 @@ const i18n = {
     attachTooBig: "That file is too big. Please attach images under " + MAX_ATTACHMENT_MB + "MB.",
     attachTooMany: "You can attach up to " + MAX_ATTACHMENTS + " images at once.",
     attachNotImage: "Julia AI can currently only see image files (screenshots, photos, etc).",
-    notConfiguredMsg: "Julia AI isn't connected to a brain yet! The site owner needs to set up the backend (see Mimi worker.js) before I can chat for real. 🎀"
+    notConfiguredMsg: "Julia AI isn't connected to a brain yet! The site owner needs to set up the backend (see Mimi worker.js) before I can chat for real. 🐱"
   },
   fil: {
-    modelPill: "🎀 Julia AI 🎀 · ang kaibigan mong pusa",
+    modelPill: "🐱 Julia AI 🐱 · ang kaibigan mong pusa",
     heroTitle: "Hi, ako si Julia AI",
     heroSubtitle: "Itanong mo kahit ano, nakikinig ako nang buong-buo.",
-    chip1: "✨ Kwentong kaalaman", chip2: "🎀 Sumulat ng tula", chip3: "📋 Planuhin ang araw ko", chip4: "💡 Ipaliwanag nang simple",
+    chip1: "✨ Kwentong kaalaman", chip2: "🐱 Sumulat ng tula", chip3: "📋 Planuhin ang araw ko", chip4: "💡 Ipaliwanag nang simple",
     prompt1: "Sabihan mo ako ng kawili-wiling kaalaman na hindi ko pa alam",
     prompt2: "Sumulat ka ng maikli at malambing na tula tungkol sa pagkakaibigan",
     prompt3: "Tulungan mo akong magplano ng maginhawang Linggo",
     prompt4: "Ipaliwanag mo nang simple at friendly: paano gumagana ang internet?",
     newChat: "Bagong chat",
     recent: "Kamakailan",
-    footer: "Ginawa nang may 🎀 para sa'yo",
+    footer: "Ginawa nang may 🐱 para sa'yo",
     placeholder: "Mag-message kay Julia AI...",
     disclaimer: "Posibleng magkamali si Julia AI. I-double check ang mahahalagang impormasyon.",
     newChatTitle: "Bagong chat",
-    errorMsg: "Ay, natanggal ang laso ko! May naganap na error sa server. Subukan ulit sandali. 🎀",
+    errorMsg: "Ay, natanggal ang laso ko! May naganap na error sa server. Subukan ulit sandali. 🐱",
     languageName: "Filipino",
     noChatsYet: "Wala pang chat sa wikang ito",
     deleteChat: "Burahin ang chat",
-    notConfiguredMsg: "Hindi pa naka-connect si Julia AI sa utak niya! Kailangan munang i-set up ng may-ari ng site ang backend (tingnan ang Mimi worker.js) bago ako makapag-chat nang totoo. 🎀"
+    notConfiguredMsg: "Hindi pa naka-connect si Julia AI sa utak niya! Kailangan munang i-set up ng may-ari ng site ang backend (tingnan ang Mimi worker.js) bago ako makapag-chat nang totoo. 🐱"
   },
   ja: {
-    modelPill: "🎀 ジュリアAI 🎀 ・あなたの猫の相棒",
+    modelPill: "🐱 ジュリアAI 🐱 ・あなたの猫の相棒",
     heroTitle: "こんにちは、ジュリアAIです",
     heroSubtitle: "なんでも聞いてね。リボンを揺らして耳を澄ませてるよ。",
-    chip1: "✨ 豆知識", chip2: "🎀 詩を書く", chip3: "📋 一日の予定", chip4: "💡 やさしく説明",
+    chip1: "✨ 豆知識", chip2: "🐱 詩を書く", chip3: "📋 一日の予定", chip4: "💡 やさしく説明",
     prompt1: "私が知らなそうな面白い豆知識を教えて",
     prompt2: "友情についての短くて優しい詩を書いて",
     prompt3: "のんびりした日曜日の過ごし方を考えて",
     prompt4: "インターネットの仕組みをやさしく簡単に説明して",
     newChat: "新しいチャット",
     recent: "最近のチャット",
-    footer: "🎀 を込めて作りました",
+    footer: "🐱 を込めて作りました",
     placeholder: "ジュリアAIにメッセージを送る...",
     disclaimer: "ジュリアAIも間違えることがあります。重要な情報は確認してね。",
     newChatTitle: "新しいチャット",
-    errorMsg: "あっ、リボンがほどけちゃった！サーバーに問題が発生しました。少し待ってからもう一度お試しください。🎀",
+    errorMsg: "あっ、リボンがほどけちゃった！サーバーに問題が発生しました。少し待ってからもう一度お試しください。🐱",
     languageName: "日本語",
     noChatsYet: "この言語のチャットはまだありません",
     deleteChat: "チャットを削除",
-    notConfiguredMsg: "まだジュリアAIの頭脳が接続されていないよ！ サイトの管理者がバックエンド（Mimi worker.js）を設定する必要があるの。🎀"
+    notConfiguredMsg: "まだジュリアAIの頭脳が接続されていないよ！ サイトの管理者がバックエンド（Mimi worker.js）を設定する必要があるの。🐱"
   },
   es: {
-    modelPill: "🎀 Julia AI 🎀 · tu amiga gatita",
+    modelPill: "🐱 Julia AI 🐱 · tu amiga gatita",
     heroTitle: "Hola, soy Julia AI",
     heroSubtitle: "Pregúntame lo que quieras, te escucho con todo mi lazo.",
-    chip1: "✨ Dato curioso", chip2: "🎀 Escribe un poema", chip3: "📋 Planea mi día", chip4: "💡 Explica algo simple",
+    chip1: "✨ Dato curioso", chip2: "🐱 Escribe un poema", chip3: "📋 Planea mi día", chip4: "💡 Explica algo simple",
     prompt1: "Cuéntame un dato curioso que probablemente no conozca",
     prompt2: "Escríbeme un poema corto y dulce sobre la amistad",
     prompt3: "Ayúdame a planear un domingo tranquilo y acogedor",
     prompt4: "Explica algo complicado de forma simple y amigable: ¿cómo funciona internet?",
     newChat: "Nuevo chat",
     recent: "Recientes",
-    footer: "Hecho con 🎀 para ti",
+    footer: "Hecho con 🐱 para ti",
     placeholder: "Escríbele a Julia AI...",
     disclaimer: "Julia AI puede cometer errores. Verifica la información importante.",
     newChatTitle: "Nuevo chat",
-    errorMsg: "¡Ups, se me soltó el lazo! Algo salió mal con el servidor. Intenta de nuevo en un momento. 🎀",
+    errorMsg: "¡Ups, se me soltó el lazo! Algo salió mal con el servidor. Intenta de nuevo en un momento. 🐱",
     languageName: "Español",
     noChatsYet: "Aún no hay chats en este idioma",
     deleteChat: "Eliminar chat",
-    notConfiguredMsg: "¡Julia AI todavía no está conectada a un cerebro! El dueño del sitio debe configurar el backend (ver Mimi worker.js) antes de que pueda chatear de verdad. 🎀"
+    notConfiguredMsg: "¡Julia AI todavía no está conectada a un cerebro! El dueño del sitio debe configurar el backend (ver Mimi worker.js) antes de que pueda chatear de verdad. 🐱"
   },
   ko: {
-    modelPill: "🎀 줄리아 AI 🎀 · 나의 고양이 친구",
+    modelPill: "🐱 줄리아 AI 🐱 · 나의 고양이 친구",
     heroTitle: "안녕, 나는 줄리아 AI야",
     heroSubtitle: "무엇이든 물어봐, 리본을 쫑긋 세우고 듣고 있을게.",
-    chip1: "✨ 재미있는 사실", chip2: "🎀 시 써주기", chip3: "📋 하루 계획", chip4: "💡 쉽게 설명하기",
+    chip1: "✨ 재미있는 사실", chip2: "🐱 시 써주기", chip3: "📋 하루 계획", chip4: "💡 쉽게 설명하기",
     prompt1: "내가 잘 모를 것 같은 재미있는 사실 하나 알려줘",
     prompt2: "우정에 대한 짧고 따뜻한 시를 써줘",
     prompt3: "편안한 일요일을 계획하는 걸 도와줘",
     prompt4: "인터넷이 어떻게 작동하는지 쉽고 친근하게 설명해줘",
     newChat: "새 채팅",
     recent: "최근 채팅",
-    footer: "🎀 마음을 담아 만들었어요",
+    footer: "🐱 마음을 담아 만들었어요",
     placeholder: "줄리아 AI에게 메시지 보내기...",
     disclaimer: "줄리아 AI도 실수를 할 수 있어요. 중요한 정보는 다시 확인하세요.",
     newChatTitle: "새 채팅",
-    errorMsg: "앗, 리본이 풀렸어! 서버에 문제가 생겼어요. 잠시 후 다시 시도해주세요. 🎀",
+    errorMsg: "앗, 리본이 풀렸어! 서버에 문제가 생겼어요. 잠시 후 다시 시도해주세요. 🐱",
     languageName: "한국어",
     noChatsYet: "이 언어로 된 채팅이 아직 없어요",
     deleteChat: "채팅 삭제",
-    notConfiguredMsg: "줄리아 AI가 아직 두뇌에 연결되지 않았어요! 사이트 관리자가 백엔드(Mimi worker.js 참고)를 먼저 설정해야 진짜로 대화할 수 있어요. 🎀"
+    notConfiguredMsg: "줄리아 AI가 아직 두뇌에 연결되지 않았어요! 사이트 관리자가 백엔드(Mimi worker.js 참고)를 먼저 설정해야 진짜로 대화할 수 있어요. 🐱"
   }
 };
 
@@ -159,6 +160,7 @@ document.getElementById('langSelect').addEventListener('change', (e) => {
   } else {
     newConversation();
   }
+  saveState();
 });
 
 const chatScroll = document.getElementById('chatScroll');
@@ -181,6 +183,31 @@ let pendingAttachments = []; // [{id, name, mimeType, dataUrl, base64}]
 
 function uid(){ return Math.random().toString(36).slice(2,9); }
 
+/* ---------------- Persistence (localStorage) ---------------- */
+
+function saveState(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ conversations, currentId, currentLang }));
+  }catch(e){ console.error('Failed to save chat state', e); }
+}
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return false;
+    const data = JSON.parse(raw);
+    if(!data || !Array.isArray(data.conversations) || data.conversations.length === 0) return false;
+    conversations = data.conversations;
+    currentLang = data.currentLang || 'en';
+    currentId = data.currentId;
+    if(!conversations.find(c => c.id === currentId)){
+      const firstInLang = conversations.find(c => c.lang === currentLang);
+      currentId = firstInLang ? firstInLang.id : conversations[0].id;
+    }
+    return true;
+  }catch(e){ console.error('Failed to load chat state', e); return false; }
+}
+
 function newConversation(){
   const conv = { id: uid(), title: t('newChatTitle'), lang: currentLang, customTitle: false, messages: [] };
   conversations.unshift(conv);
@@ -189,6 +216,7 @@ function newConversation(){
   renderAttachPreview();
   renderHistory();
   renderChat();
+  saveState();
 }
 
 function currentConv(){
@@ -215,7 +243,7 @@ function renderHistory(){
     const title = document.createElement('span');
     title.className = 'history-item-title';
     title.textContent = c.title;
-    title.onclick = () => { currentId = c.id; renderHistory(); renderChat(); closeSidebarMobile(); };
+    title.onclick = () => { currentId = c.id; renderHistory(); renderChat(); closeSidebarMobile(); saveState(); };
 
     const actions = document.createElement('div');
     actions.className = 'history-actions';
@@ -263,6 +291,7 @@ function startRenaming(itemEl, conv){
       conv.customTitle = true;
     }
     renderHistory();
+    saveState();
   };
   inputEl.addEventListener('keydown', (e) => {
     if(e.key === 'Enter'){ e.preventDefault(); commit(); }
@@ -288,6 +317,7 @@ function deleteConversation(id){
   }
   renderHistory();
   renderChat();
+  saveState();
 }
 
 /* ---------------- Chat rendering ---------------- */
@@ -321,12 +351,12 @@ function appendBubble(role, text, idx, attachments, animate=true){
   const msg = document.createElement('div');
   msg.className = 'msg ' + role;
 
-  const avatar = document.createElement('div');
-  avatar.className = 'avatar ' + role;
+  // Only Julia (the AI) gets an avatar — no icon is shown for the user's own messages.
+  let avatar = null;
   if(role === 'ai'){
-    avatar.textContent = '🎀';
-  } else {
-    avatar.innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>';
+    avatar = document.createElement('div');
+    avatar.className = 'avatar ai';
+    avatar.textContent = '🐱';
   }
 
   const col = document.createElement('div');
@@ -358,7 +388,7 @@ function appendBubble(role, text, idx, attachments, animate=true){
     col.appendChild(tools);
   }
 
-  msg.appendChild(avatar);
+  if(avatar) msg.appendChild(avatar);
   msg.appendChild(col);
   if(!animate) msg.style.animation = 'none';
   chatInner.appendChild(msg);
@@ -413,6 +443,7 @@ function commitEditMessage(idx, newText){
 
   renderChat();
   renderHistory();
+  saveState();
   getAIResponse(conv);
 }
 
@@ -422,7 +453,7 @@ function appendTyping(){
   msg.id = 'typingMsg';
   const avatar = document.createElement('div');
   avatar.className = 'avatar ai';
-  avatar.textContent = '🎀';
+  avatar.textContent = '🐱';
   const col = document.createElement('div');
   col.className = 'msg-col';
   const bubble = document.createElement('div');
@@ -572,6 +603,7 @@ async function send(){
   sendBtn.disabled = true;
   renderChat();
   renderHistory();
+  saveState();
 
   await getAIResponse(conv);
 }
@@ -596,7 +628,7 @@ async function getAIResponse(conv){
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        system: "You are Julia AI, a warm, cheerful, kind AI companion with a cute cat-and-bow personality. You can see any images the user attaches (photos, screenshots, etc) — describe or use them naturally when relevant. Keep replies friendly, clear, and not overly long unless asked. Light, tasteful use of an occasional emoji like 🎀 or 🐾 is welcome but don't overdo it. Always respond in " + t('languageName') + ", regardless of what language the user writes in, unless they explicitly ask you to switch languages.",
+        system: "You are Julia AI, a warm, cheerful, kind AI companion with a cute cat-and-bow personality. You can see any images the user attaches (photos, screenshots, etc) — describe or use them naturally when relevant. Keep replies friendly, clear, and not overly long unless asked. Light, tasteful use of an occasional emoji like 🐱 or 🐾 is welcome but don't overdo it. Always respond in " + t('languageName') + ", regardless of what language the user writes in, unless they explicitly ask you to switch languages.",
         messages: apiMessages
       })
     });
@@ -638,6 +670,7 @@ async function getAIResponse(conv){
     }
 
     conv.messages.push({ role:'ai', content: fullText || "Sorry, I didn't quite catch that. Could you try again?" });
+    saveState();
 
   }catch(err){
     console.error(err);
@@ -651,5 +684,12 @@ async function getAIResponse(conv){
 }
 
 // init
+const loaded = loadState();
+document.getElementById('langSelect').value = currentLang;
 applyLanguage();
-newConversation();
+if(loaded){
+  renderHistory();
+  renderChat();
+} else {
+  newConversation();
+}
