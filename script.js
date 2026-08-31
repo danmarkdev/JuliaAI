@@ -3,7 +3,7 @@
 // The worker holds your Gemini API key server-side so it never
 // appears in this file or anywhere the browser can see it.
 // e.g. "https://julia-ai-chat-proxy.your-subdomain.workers.dev"
-const API_ENDPOINT = "https://mimi-chat-proxy.YOUR-SUBDOMAIN.workers.dev";
+const API_ENDPOINT = "https://julia-ai-chat-proxy.kdanmarkrosalejos.workers.dev";
 // ---------------------------------------------------------------
 
 const MAX_ATTACHMENTS = 4;
