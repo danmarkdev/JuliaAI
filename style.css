@@ -568,6 +568,21 @@ html, body, .app { width:100%; height:100%; }
   .hero{ height: calc(100vh - 200px); }
   .hero h1{ font-size:27px; }
   .msg-col{ max-width:86%; }
+
+  .topbar{ padding:14px 14px; gap:8px; }
+  .model-pill{
+    flex:1;
+    min-width:0;
+    max-width:100%;
+    font-size:12.5px;
+    padding:6px 12px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .topbar-right{ flex-shrink:0; gap:6px; }
+  .lang-select{ font-size:12px; padding:7px 9px; padding-right:24px; }
+  .paw-badge{ width:32px; height:32px; font-size:14px; }
 }
 
 @media (prefers-reduced-motion: reduce){
