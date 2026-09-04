@@ -1,5 +1,5 @@
 const ALLOWED_ORIGIN = "*"; // e.g. "https://danmarkdev.github.io" for production
-const GEMINI_MODEL = "gemini-2.5-flash-lite"; // free tier: ~1,000 requests/day
+const GEMINI_MODEL = "gemini-3.5-flash-lite"; // free tier: ~1,500 requests/day
 const MAX_ATTACHMENTS_PER_MESSAGE = 4;
 
 export default {
