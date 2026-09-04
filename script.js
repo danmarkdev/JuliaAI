@@ -9,6 +9,7 @@ const API_ENDPOINT = "https://julia-ai-chat-proxy.kdanmarkrosalejos.workers.dev"
 const MAX_ATTACHMENTS = 4;
 const MAX_ATTACHMENT_MB = 5;
 const STORAGE_KEY = 'juliaAiConversations';
+const SYNC_CODE_KEY = 'juliaAiSyncCode';
 
 const i18n = {
   en: {
@@ -181,6 +182,10 @@ let conversations = [];      // {id, title, lang, customTitle, messages:[{role, 
 let currentId = null;
 let pendingAttachments = []; // [{id, name, mimeType, dataUrl, base64}]
 
+// ---- Cross-device sync state ----
+let syncCode = localStorage.getItem(SYNC_CODE_KEY) || null;
+let syncPushTimer = null;
+
 function uid(){ return Math.random().toString(36).slice(2,9); }
 
 // Compact version of the cat-and-bow logo mark, used as Julia's avatar in chat.
@@ -192,6 +197,7 @@ function saveState(){
   try{
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ conversations, currentId, currentLang }));
   }catch(e){ console.error('Failed to save chat state', e); }
+  scheduleSyncPush();
 }
 
 function loadState(){
@@ -210,6 +216,80 @@ function loadState(){
     return true;
   }catch(e){ console.error('Failed to load chat state', e); return false; }
 }
+
+/* ---------------- Cross-device sync (Cloudflare KV via Worker) ---------------- */
+
+function setSyncCode(code){
+  syncCode = code;
+  localStorage.setItem(SYNC_CODE_KEY, code);
+}
+
+function generateSyncCode(){
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // avoids confusing chars like 0/O, 1/I
+  let code = '';
+  for(let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+
+async function pushToServer(){
+  if(!syncCode) return;
+  try{
+    await fetch(API_ENDPOINT + '/sync/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: syncCode, conversations, currentLang })
+    });
+  }catch(e){ console.error('Sync push failed', e); }
+}
+
+function scheduleSyncPush(){
+  if(!syncCode) return;
+  clearTimeout(syncPushTimer);
+  syncPushTimer = setTimeout(pushToServer, 1200);
+}
+
+async function pullFromServer(code){
+  try{
+    const res = await fetch(API_ENDPOINT + '/sync/load?code=' + encodeURIComponent(code));
+    const data = await res.json();
+    if(data && data.found){
+      conversations = data.conversations || [];
+      currentLang = data.currentLang || 'en';
+      if(conversations.length) currentId = conversations[0].id;
+      return true;
+    }
+    return false;
+  }catch(e){ console.error('Sync pull failed', e); return false; }
+}
+
+async function openSyncMenu(){
+  const suggestion = syncCode || generateSyncCode();
+  const msg = syncCode
+    ? `Your current sync code is: ${syncCode}\n\nType the SAME code on your other device to link it, or type a different one to switch.`
+    : `This device has no sync code yet.\n\nType this code (or your own 6-character one) and use it on your other device too:`;
+  const answer = prompt(msg, suggestion);
+  if(answer === null) return;
+  const code = answer.trim().toUpperCase();
+  if(!/^[A-Z0-9]{6}$/.test(code)){
+    alert('Sync code must be exactly 6 letters/numbers. Please try again. 🎀');
+    return;
+  }
+  setSyncCode(code);
+  const pulled = await pullFromServer(code);
+  if(pulled){
+    document.getElementById('langSelect').value = currentLang;
+    applyLanguage();
+    renderHistory();
+    renderChat();
+    saveState();
+    alert('Synced! Chats from that code are now loaded here. 🎀');
+  } else {
+    await pushToServer();
+    alert('This device is now linked to that code. Enter the same code on your other device to sync. 🎀');
+  }
+}
+
+document.getElementById('syncBtn').addEventListener('click', openSyncMenu);
 
 function newConversation(){
   const conv = { id: uid(), title: t('newChatTitle'), lang: currentLang, customTitle: false, messages: [] };
@@ -687,12 +767,30 @@ async function getAIResponse(conv){
 }
 
 // init
-const loaded = loadState();
-document.getElementById('langSelect').value = currentLang;
-applyLanguage();
-if(loaded){
-  renderHistory();
-  renderChat();
-} else {
-  newConversation();
-}
+(async function init(){
+  const loaded = loadState();
+  document.getElementById('langSelect').value = currentLang;
+  applyLanguage();
+
+  if(syncCode){
+    const pulled = await pullFromServer(syncCode);
+    if(pulled){
+      document.getElementById('langSelect').value = currentLang;
+      applyLanguage();
+      renderHistory();
+      renderChat();
+    } else if(loaded){
+      renderHistory();
+      renderChat();
+      pushToServer();
+    } else {
+      newConversation();
+      pushToServer();
+    }
+  } else if(loaded){
+    renderHistory();
+    renderChat();
+  } else {
+    newConversation();
+  }
+})();
