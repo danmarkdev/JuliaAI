@@ -1,6 +1,6 @@
 const ALLOWED_ORIGIN = "*"; // e.g. "https://danmarkdev.github.io" for production
-const GEMINI_MODEL = "gemini-3.5-flash-lite"; // free tier: ~1,500 requests/day (text chat)
-const IMAGE_MODEL = "gemini-2.5-flash-image"; // "Nano Banana" — swap this line if Google retires it, same as GEMINI_MODEL above
+const GEMINI_MODEL = "gemini-3.5-flash-lite"; // free tier: chat model, 1,500 chat a day
+const IMAGE_MODEL = "gemini-3.1-flash-image"; // "Nano Banana 2" — gemini-2.5-flash-image is being retired Oct 2026, swap this line again if this one is retired
 const MAX_ATTACHMENTS_PER_MESSAGE = 4;
 
 export default {
@@ -155,8 +155,13 @@ async function handleImageGeneration(request, env, corsHeaders) {
     const data = await res.json();
 
     if (!res.ok) {
+      // Surface Google's real error (e.g. "billing required", "model not found",
+      // "quota exceeded") instead of a generic failure — makes this much easier
+      // to debug from the browser console / Cloudflare logs.
+      const upstreamMessage = (data && data.error && data.error.message) || `Image generation failed (HTTP ${res.status})`;
+      console.log("Nano Banana error:", res.status, JSON.stringify(data));
       return new Response(
-        JSON.stringify({ error: (data && data.error && data.error.message) || "Image generation failed" }),
+        JSON.stringify({ error: upstreamMessage, status: res.status }),
         { status: res.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -173,6 +178,17 @@ async function handleImageGeneration(request, env, corsHeaders) {
         imageBase64 = inline.data;
         mimeType = inline.mimeType || inline.mime_type || mimeType;
       }
+    }
+
+    if (!imageBase64) {
+      // The model responded successfully but didn't actually return image bytes
+      // (can happen on safety blocks) — treat this as an error too instead of
+      // silently showing nothing.
+      console.log("Nano Banana returned no image data:", JSON.stringify(data));
+      return new Response(
+        JSON.stringify({ error: text || "The model didn't return an image for that prompt." }),
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     return new Response(JSON.stringify({ text, imageBase64, mimeType }), {
