@@ -45,7 +45,6 @@
     <div class="history-label" id="recentLabel">Recent</div>
     <div class="history" id="history"></div>
 
-    <button class="sync-btn" id="syncBtn" type="button">🔗 Sync devices</button>
     <div class="sidebar-footer" id="sidebarFooter">Made with 🎀 for you</div>
   </aside>
 
@@ -100,11 +99,17 @@
     </div>
 
     <div class="composer-wrap">
+      <div class="image-mode-banner" id="imageModeBanner">
+        <span id="imageModeBannerText">🖼️ Image mode is on — your next message will generate a picture.</span>
+      </div>
       <div class="attach-preview" id="attachPreview"></div>
       <div class="composer">
         <input type="file" id="fileInput" accept="image/*" multiple hidden>
         <button class="attach-btn" id="attachBtn" type="button" aria-label="Attach a file">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <button class="image-mode-btn" id="imageModeBtn" type="button" aria-label="Generate an image">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
         </button>
         <textarea id="input" rows="1" placeholder="Message 🎀 Julia AI 🎀..."></textarea>
         <button class="send-btn" id="sendBtn" disabled aria-label="Send">
