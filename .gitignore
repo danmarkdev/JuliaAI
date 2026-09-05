@@ -1,0 +1,5 @@
+# Keep the Cloudflare Worker source out of the public GitHub repo.
+# (It doesn't contain the actual API key — that's a Cloudflare secret —
+# but this keeps the backend logic itself private.)
+Mimi worker.js
+worker.js
