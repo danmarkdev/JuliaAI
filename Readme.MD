@@ -2,7 +2,6 @@
 
 A cute, cat-themed AI chat companion — built as a static site (GitHub Pages) with a small serverless backend (Cloudflare Workers) so no server hosting or API keys are ever exposed to visitors.
 
-**Live site:** https://danmarkdev.github.io/JuliaAI/
 
 ## Features
 
