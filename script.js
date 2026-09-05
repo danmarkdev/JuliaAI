@@ -9,7 +9,6 @@ const API_ENDPOINT = "https://julia-ai-chat-proxy.kdanmarkrosalejos.workers.dev"
 const MAX_ATTACHMENTS = 4;
 const MAX_ATTACHMENT_MB = 5;
 const STORAGE_KEY = 'juliaAiConversations';
-const SYNC_CODE_KEY = 'juliaAiSyncCode';
 
 const i18n = {
   en: {
@@ -25,14 +24,18 @@ const i18n = {
     recent: "Recent",
     footer: "Made with 🎀 for you",
     placeholder: "Message Julia AI...",
+    imagePlaceholder: "Describe the image you want Julia to draw...",
     disclaimer: "Julia AI can make mistakes. Double-check important info.",
     newChatTitle: "New chat",
     errorMsg: "Oops, my bow slipped! Something went wrong reaching the server. Please try again in a moment. 🎀",
+    imageErrorMsg: "Oops, I couldn't draw that this time! Please try again in a moment. 🎀",
     languageName: "English",
     noChatsYet: "No chats in this language yet",
     deleteChat: "Delete chat",
     renameChat: "Rename chat",
     editMessage: "Edit message",
+    copyMessage: "Copy",
+    copiedMessage: "Copied!",
     saveEdit: "Save & resend",
     cancelEdit: "Cancel",
     attachFile: "Attach a file",
@@ -40,7 +43,9 @@ const i18n = {
     attachTooBig: "That file is too big. Please attach images under " + MAX_ATTACHMENT_MB + "MB.",
     attachTooMany: "You can attach up to " + MAX_ATTACHMENTS + " images at once.",
     attachNotImage: "Julia AI can currently only see image files (screenshots, photos, etc).",
-    notConfiguredMsg: "Julia AI isn't connected to a brain yet! The site owner needs to set up the backend (see Mimi worker.js) before I can chat for real. 🎀"
+    notConfiguredMsg: "Julia AI isn't connected to a brain yet! The site owner needs to set up the backend (see Mimi worker.js) before I can chat for real. 🎀",
+    imageModeOn: "🖼️ Image mode is on — your next message will generate a picture.",
+    generatingImage: "Drawing your image..."
   },
   fil: {
     modelPill: "🎀 Julia AI 🎀 · ang kaibigan mong pusa",
@@ -55,13 +60,19 @@ const i18n = {
     recent: "Kamakailan",
     footer: "Ginawa nang may 🎀 para sa'yo",
     placeholder: "Mag-message kay Julia AI...",
+    imagePlaceholder: "Ilarawan ang gusto mong ipaguhit kay Julia...",
     disclaimer: "Posibleng magkamali si Julia AI. I-double check ang mahahalagang impormasyon.",
     newChatTitle: "Bagong chat",
     errorMsg: "Ay, natanggal ang laso ko! May naganap na error sa server. Subukan ulit sandali. 🎀",
+    imageErrorMsg: "Ay, hindi ko naiguhit iyon! Subukan ulit sandali. 🎀",
     languageName: "Filipino",
     noChatsYet: "Wala pang chat sa wikang ito",
     deleteChat: "Burahin ang chat",
-    notConfiguredMsg: "Hindi pa naka-connect si Julia AI sa utak niya! Kailangan munang i-set up ng may-ari ng site ang backend (tingnan ang Mimi worker.js) bago ako makapag-chat nang totoo. 🎀"
+    copyMessage: "Kopyahin",
+    copiedMessage: "Nakopya!",
+    notConfiguredMsg: "Hindi pa naka-connect si Julia AI sa utak niya! Kailangan munang i-set up ng may-ari ng site ang backend (tingnan ang Mimi worker.js) bago ako makapag-chat nang totoo. 🎀",
+    imageModeOn: "🖼️ Naka-on ang image mode — ang susunod mong mensahe ay gagawa ng larawan.",
+    generatingImage: "Ginuguhit ang larawan mo..."
   },
   ja: {
     modelPill: "🎀 ジュリアAI 🎀 ・あなたの猫の相棒",
@@ -76,13 +87,19 @@ const i18n = {
     recent: "最近のチャット",
     footer: "🎀 を込めて作りました",
     placeholder: "ジュリアAIにメッセージを送る...",
+    imagePlaceholder: "ジュリアに描いてほしい画像を説明してください...",
     disclaimer: "ジュリアAIも間違えることがあります。重要な情報は確認してね。",
     newChatTitle: "新しいチャット",
     errorMsg: "あっ、リボンがほどけちゃった！サーバーに問題が発生しました。少し待ってからもう一度お試しください。🎀",
+    imageErrorMsg: "あっ、今回はうまく描けなかったよ！少し待ってからもう一度お試しください。🎀",
     languageName: "日本語",
     noChatsYet: "この言語のチャットはまだありません",
     deleteChat: "チャットを削除",
-    notConfiguredMsg: "まだジュリアAIの頭脳が接続されていないよ！ サイトの管理者がバックエンド（Mimi worker.js）を設定する必要があるの。🎀"
+    copyMessage: "コピー",
+    copiedMessage: "コピーしました！",
+    notConfiguredMsg: "まだジュリアAIの頭脳が接続されていないよ！ サイトの管理者がバックエンド（Mimi worker.js）を設定する必要があるの。🎀",
+    imageModeOn: "🖼️ 画像モードがオンです — 次のメッセージで画像を生成します。",
+    generatingImage: "画像を描いています..."
   },
   es: {
     modelPill: "🎀 Julia AI 🎀 · tu amiga gatita",
@@ -97,13 +114,19 @@ const i18n = {
     recent: "Recientes",
     footer: "Hecho con 🎀 para ti",
     placeholder: "Escríbele a Julia AI...",
+    imagePlaceholder: "Describe la imagen que quieres que Julia dibuje...",
     disclaimer: "Julia AI puede cometer errores. Verifica la información importante.",
     newChatTitle: "Nuevo chat",
     errorMsg: "¡Ups, se me soltó el lazo! Algo salió mal con el servidor. Intenta de nuevo en un momento. 🎀",
+    imageErrorMsg: "¡Ups, no pude dibujar eso esta vez! Intenta de nuevo en un momento. 🎀",
     languageName: "Español",
     noChatsYet: "Aún no hay chats en este idioma",
     deleteChat: "Eliminar chat",
-    notConfiguredMsg: "¡Julia AI todavía no está conectada a un cerebro! El dueño del sitio debe configurar el backend (ver Mimi worker.js) antes de que pueda chatear de verdad. 🎀"
+    copyMessage: "Copiar",
+    copiedMessage: "¡Copiado!",
+    notConfiguredMsg: "¡Julia AI todavía no está conectada a un cerebro! El dueño del sitio debe configurar el backend (ver Mimi worker.js) antes de que pueda chatear de verdad. 🎀",
+    imageModeOn: "🖼️ El modo imagen está activado — tu próximo mensaje generará una imagen.",
+    generatingImage: "Dibujando tu imagen..."
   },
   ko: {
     modelPill: "🎀 줄리아 AI 🎀 · 나의 고양이 친구",
@@ -118,13 +141,19 @@ const i18n = {
     recent: "최근 채팅",
     footer: "🎀 마음을 담아 만들었어요",
     placeholder: "줄리아 AI에게 메시지 보내기...",
+    imagePlaceholder: "줄리아가 그려줄 이미지를 설명해주세요...",
     disclaimer: "줄리아 AI도 실수를 할 수 있어요. 중요한 정보는 다시 확인하세요.",
     newChatTitle: "새 채팅",
     errorMsg: "앗, 리본이 풀렸어! 서버에 문제가 생겼어요. 잠시 후 다시 시도해주세요. 🎀",
+    imageErrorMsg: "앗, 이번엔 그리지 못했어! 잠시 후 다시 시도해주세요. 🎀",
     languageName: "한국어",
     noChatsYet: "이 언어로 된 채팅이 아직 없어요",
     deleteChat: "채팅 삭제",
-    notConfiguredMsg: "줄리아 AI가 아직 두뇌에 연결되지 않았어요! 사이트 관리자가 백엔드(Mimi worker.js 참고)를 먼저 설정해야 진짜로 대화할 수 있어요. 🎀"
+    copyMessage: "복사",
+    copiedMessage: "복사됨!",
+    notConfiguredMsg: "줄리아 AI가 아직 두뇌에 연결되지 않았어요! 사이트 관리자가 백엔드(Mimi worker.js 참고)를 먼저 설정해야 진짜로 대화할 수 있어요. 🎀",
+    imageModeOn: "🖼️ 이미지 모드가 켜져 있어요 — 다음 메시지로 그림을 생성해요.",
+    generatingImage: "이미지를 그리는 중..."
   }
 };
 
@@ -140,8 +169,9 @@ function applyLanguage(){
   document.getElementById('recentLabel').textContent = t('recent');
   document.getElementById('sidebarFooter').textContent = t('footer');
   document.getElementById('disclaimerText').textContent = t('disclaimer');
-  input.placeholder = t('placeholder');
+  input.placeholder = imageMode ? t('imagePlaceholder') : t('placeholder');
   attachBtn.setAttribute('aria-label', t('attachFile'));
+  document.getElementById('imageModeBannerText').textContent = t('imageModeOn');
   document.querySelectorAll('.chip').forEach(chip => {
     const key = chip.dataset.key;
     chip.textContent = t(key);
@@ -177,14 +207,13 @@ const newChatBtn = document.getElementById('newChatBtn');
 const attachBtn = document.getElementById('attachBtn');
 const fileInput = document.getElementById('fileInput');
 const attachPreview = document.getElementById('attachPreview');
+const imageModeBtn = document.getElementById('imageModeBtn');
+const imageModeBanner = document.getElementById('imageModeBanner');
 
 let conversations = [];      // {id, title, lang, customTitle, messages:[{role, content, attachments}]}
 let currentId = null;
 let pendingAttachments = []; // [{id, name, mimeType, dataUrl, base64}]
-
-// ---- Cross-device sync state ----
-let syncCode = localStorage.getItem(SYNC_CODE_KEY) || null;
-let syncPushTimer = null;
+let imageMode = false;       // when true, the next send() generates an image instead of chatting
 
 function uid(){ return Math.random().toString(36).slice(2,9); }
 
@@ -197,7 +226,6 @@ function saveState(){
   try{
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ conversations, currentId, currentLang }));
   }catch(e){ console.error('Failed to save chat state', e); }
-  scheduleSyncPush();
 }
 
 function loadState(){
@@ -216,80 +244,6 @@ function loadState(){
     return true;
   }catch(e){ console.error('Failed to load chat state', e); return false; }
 }
-
-/* ---------------- Cross-device sync (Cloudflare KV via Worker) ---------------- */
-
-function setSyncCode(code){
-  syncCode = code;
-  localStorage.setItem(SYNC_CODE_KEY, code);
-}
-
-function generateSyncCode(){
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // avoids confusing chars like 0/O, 1/I
-  let code = '';
-  for(let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
-  return code;
-}
-
-async function pushToServer(){
-  if(!syncCode) return;
-  try{
-    await fetch(API_ENDPOINT + '/sync/save', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code: syncCode, conversations, currentLang })
-    });
-  }catch(e){ console.error('Sync push failed', e); }
-}
-
-function scheduleSyncPush(){
-  if(!syncCode) return;
-  clearTimeout(syncPushTimer);
-  syncPushTimer = setTimeout(pushToServer, 1200);
-}
-
-async function pullFromServer(code){
-  try{
-    const res = await fetch(API_ENDPOINT + '/sync/load?code=' + encodeURIComponent(code));
-    const data = await res.json();
-    if(data && data.found){
-      conversations = data.conversations || [];
-      currentLang = data.currentLang || 'en';
-      if(conversations.length) currentId = conversations[0].id;
-      return true;
-    }
-    return false;
-  }catch(e){ console.error('Sync pull failed', e); return false; }
-}
-
-async function openSyncMenu(){
-  const suggestion = syncCode || generateSyncCode();
-  const msg = syncCode
-    ? `Your current sync code is: ${syncCode}\n\nType the SAME code on your other device to link it, or type a different one to switch.`
-    : `This device has no sync code yet.\n\nType this code (or your own 6-character one) and use it on your other device too:`;
-  const answer = prompt(msg, suggestion);
-  if(answer === null) return;
-  const code = answer.trim().toUpperCase();
-  if(!/^[A-Z0-9]{6}$/.test(code)){
-    alert('Sync code must be exactly 6 letters/numbers. Please try again. 🎀');
-    return;
-  }
-  setSyncCode(code);
-  const pulled = await pullFromServer(code);
-  if(pulled){
-    document.getElementById('langSelect').value = currentLang;
-    applyLanguage();
-    renderHistory();
-    renderChat();
-    saveState();
-    alert('Synced! Chats from that code are now loaded here. 🎀');
-  } else {
-    await pushToServer();
-    alert('This device is now linked to that code. Enter the same code on your other device to sync. 🎀');
-  }
-}
-
-document.getElementById('syncBtn').addEventListener('click', openSyncMenu);
 
 function newConversation(){
   const conv = { id: uid(), title: t('newChatTitle'), lang: currentLang, customTitle: false, messages: [] };
@@ -425,6 +379,7 @@ function attachmentsToHtmlGrid(attachments){
     const img = document.createElement('img');
     img.src = a.dataUrl || ('data:' + a.mimeType + ';base64,' + a.data);
     img.alt = a.name || 'attachment';
+    if(a.generated) img.classList.add('generated-image');
     grid.appendChild(img);
   });
   return grid;
@@ -457,7 +412,7 @@ function appendBubble(role, text, idx, attachments, animate=true){
 
   col.appendChild(bubble);
 
-  // Only the user's own messages can be edited (and only once we know their index).
+  // User messages: edit button. AI messages: copy button.
   if(role === 'user' && typeof idx === 'number'){
     const tools = document.createElement('div');
     tools.className = 'msg-tools';
@@ -468,6 +423,26 @@ function appendBubble(role, text, idx, attachments, animate=true){
     editBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>';
     editBtn.onclick = () => beginEditMessage(idx, col, bubble);
     tools.appendChild(editBtn);
+    col.appendChild(tools);
+  } else if(role === 'ai' && text){
+    const tools = document.createElement('div');
+    tools.className = 'msg-tools';
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'msg-copy-btn';
+    copyBtn.type = 'button';
+    copyBtn.setAttribute('aria-label', t('copyMessage'));
+    const copyIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>';
+    const checkIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
+    copyBtn.innerHTML = copyIcon;
+    copyBtn.onclick = async () => {
+      try{
+        await navigator.clipboard.writeText(text);
+        copyBtn.innerHTML = checkIcon;
+        copyBtn.classList.add('copied');
+        setTimeout(() => { copyBtn.innerHTML = copyIcon; copyBtn.classList.remove('copied'); }, 1400);
+      }catch(e){ console.error('Copy failed', e); }
+    };
+    tools.appendChild(copyBtn);
     col.appendChild(tools);
   }
 
@@ -629,6 +604,16 @@ function appendSystemNotice(text){
   chatScroll.scrollTop = chatScroll.scrollHeight;
 }
 
+/* ---------------- Image mode toggle ---------------- */
+
+imageModeBtn.addEventListener('click', () => {
+  imageMode = !imageMode;
+  imageModeBtn.classList.toggle('active', imageMode);
+  imageModeBanner.classList.toggle('show', imageMode);
+  input.placeholder = imageMode ? t('imagePlaceholder') : t('placeholder');
+  input.focus();
+});
+
 /* ---------------- Composer ---------------- */
 
 function autoResize(){
@@ -677,6 +662,8 @@ async function send(){
     conv.lang = currentLang;
   }
 
+  const wasImageMode = imageMode;
+
   hero.style.display = 'none';
   conv.messages.push({ role:'user', content:text, attachments });
   input.value = '';
@@ -688,7 +675,19 @@ async function send(){
   renderHistory();
   saveState();
 
-  await getAIResponse(conv);
+  // Turn image mode off right after use so it doesn't stay on by accident.
+  if(wasImageMode){
+    imageMode = false;
+    imageModeBtn.classList.remove('active');
+    imageModeBanner.classList.remove('show');
+    input.placeholder = t('placeholder');
+  }
+
+  if(wasImageMode && text){
+    await getImageResponse(conv, text);
+  } else {
+    await getAIResponse(conv);
+  }
 }
 
 async function getAIResponse(conv){
@@ -766,31 +765,59 @@ async function getAIResponse(conv){
   }
 }
 
-// init
-(async function init(){
-  const loaded = loadState();
-  document.getElementById('langSelect').value = currentLang;
-  applyLanguage();
+async function getImageResponse(conv, prompt){
+  const typingMsg = appendTyping();
+  const typingBubble = typingMsg.querySelector('.bubble');
+  if(typingBubble) typingBubble.innerHTML = '<div class="typing"><span></span><span></span><span></span></div><span class="typing-label">' + t('generatingImage') + '</span>';
 
-  if(syncCode){
-    const pulled = await pullFromServer(syncCode);
-    if(pulled){
-      document.getElementById('langSelect').value = currentLang;
-      applyLanguage();
-      renderHistory();
-      renderChat();
-    } else if(loaded){
-      renderHistory();
-      renderChat();
-      pushToServer();
-    } else {
-      newConversation();
-      pushToServer();
+  try{
+    if(API_ENDPOINT.includes('YOUR-SUBDOMAIN')){
+      throw new Error('NOT_CONFIGURED');
     }
-  } else if(loaded){
-    renderHistory();
-    renderChat();
-  } else {
-    newConversation();
+
+    const response = await fetch(API_ENDPOINT + '/image', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt })
+    });
+
+    const data = await response.json();
+
+    if(!response.ok || !data || !data.imageBase64){
+      throw new Error(data && data.error ? data.error : 'Image generation failed');
+    }
+
+    typingMsg.remove();
+
+    const caption = data.text && data.text.trim() ? data.text.trim() : '';
+    const attachments = [{
+      mimeType: data.mimeType || 'image/png',
+      data: data.imageBase64,
+      generated: true
+    }];
+
+    appendBubble('ai', caption, undefined, attachments);
+    conv.messages.push({ role:'ai', content: caption, attachments });
+    saveState();
+
+  }catch(err){
+    console.error(err);
+    if(document.getElementById('typingMsg')) typingMsg.remove();
+    if(err.message === 'NOT_CONFIGURED'){
+      appendBubble('ai', t('notConfiguredMsg'));
+    } else {
+      appendBubble('ai', t('imageErrorMsg'));
+    }
   }
-})();
+}
+
+// init
+const loaded = loadState();
+document.getElementById('langSelect').value = currentLang;
+applyLanguage();
+if(loaded){
+  renderHistory();
+  renderChat();
+} else {
+  newConversation();
+}
