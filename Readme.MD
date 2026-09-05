@@ -9,5 +9,5 @@ A cat-themed AI chat companion that responds in five languages, generates images
 -  **Image understanding** - attach a photo or screenshot and ask about it
 -  **Multiple conversations** with rename/delete, saved per language
 -  **Edit & resend** your own messages
--  **Copy** any reply - text or generated image — straight to your clipboard
+-  **Copy** any reply - text or generated image, straight to your clipboard
 -  Mobile-friendly layout
