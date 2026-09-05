@@ -10,6 +10,12 @@ const MAX_ATTACHMENTS = 4;
 const MAX_ATTACHMENT_MB = 5;
 const STORAGE_KEY = 'juliaAiConversations';
 
+// Julia decides on her own, per message, whether the user is asking for a
+// picture. When she is, her entire reply is just this marker followed by
+// a vivid English description — the client below intercepts it, never
+// shows it as a chat bubble, and calls the image endpoint instead.
+const IMAGE_MARKER_RE = /IMAGE_REQUEST\s*::?\s*([\s\S]+)/i;
+
 const i18n = {
   en: {
     modelPill: "🎀 Julia AI 🎀 · your kitty companion",
@@ -24,7 +30,6 @@ const i18n = {
     recent: "Recent",
     footer: "Made with 🎀 for you",
     placeholder: "Message Julia AI...",
-    imagePlaceholder: "Describe the image you want Julia to draw...",
     disclaimer: "Julia AI can make mistakes. Double-check important info.",
     newChatTitle: "New chat",
     errorMsg: "Oops, my bow slipped! Something went wrong reaching the server. Please try again in a moment. 🎀",
@@ -44,7 +49,6 @@ const i18n = {
     attachTooMany: "You can attach up to " + MAX_ATTACHMENTS + " images at once.",
     attachNotImage: "Julia AI can currently only see image files (screenshots, photos, etc).",
     notConfiguredMsg: "Julia AI isn't connected to a brain yet! The site owner needs to set up the backend (see Mimi worker.js) before I can chat for real. 🎀",
-    imageModeOn: "🖼️ Image mode is on — your next message will generate a picture.",
     generatingImage: "Drawing your image..."
   },
   fil: {
@@ -60,7 +64,6 @@ const i18n = {
     recent: "Kamakailan",
     footer: "Ginawa nang may 🎀 para sa'yo",
     placeholder: "Mag-message kay Julia AI...",
-    imagePlaceholder: "Ilarawan ang gusto mong ipaguhit kay Julia...",
     disclaimer: "Posibleng magkamali si Julia AI. I-double check ang mahahalagang impormasyon.",
     newChatTitle: "Bagong chat",
     errorMsg: "Ay, natanggal ang laso ko! May naganap na error sa server. Subukan ulit sandali. 🎀",
@@ -71,7 +74,6 @@ const i18n = {
     copyMessage: "Kopyahin",
     copiedMessage: "Nakopya!",
     notConfiguredMsg: "Hindi pa naka-connect si Julia AI sa utak niya! Kailangan munang i-set up ng may-ari ng site ang backend (tingnan ang Mimi worker.js) bago ako makapag-chat nang totoo. 🎀",
-    imageModeOn: "🖼️ Naka-on ang image mode — ang susunod mong mensahe ay gagawa ng larawan.",
     generatingImage: "Ginuguhit ang larawan mo..."
   },
   ja: {
@@ -87,7 +89,6 @@ const i18n = {
     recent: "最近のチャット",
     footer: "🎀 を込めて作りました",
     placeholder: "ジュリアAIにメッセージを送る...",
-    imagePlaceholder: "ジュリアに描いてほしい画像を説明してください...",
     disclaimer: "ジュリアAIも間違えることがあります。重要な情報は確認してね。",
     newChatTitle: "新しいチャット",
     errorMsg: "あっ、リボンがほどけちゃった！サーバーに問題が発生しました。少し待ってからもう一度お試しください。🎀",
@@ -98,7 +99,6 @@ const i18n = {
     copyMessage: "コピー",
     copiedMessage: "コピーしました！",
     notConfiguredMsg: "まだジュリアAIの頭脳が接続されていないよ！ サイトの管理者がバックエンド（Mimi worker.js）を設定する必要があるの。🎀",
-    imageModeOn: "🖼️ 画像モードがオンです — 次のメッセージで画像を生成します。",
     generatingImage: "画像を描いています..."
   },
   es: {
@@ -114,7 +114,6 @@ const i18n = {
     recent: "Recientes",
     footer: "Hecho con 🎀 para ti",
     placeholder: "Escríbele a Julia AI...",
-    imagePlaceholder: "Describe la imagen que quieres que Julia dibuje...",
     disclaimer: "Julia AI puede cometer errores. Verifica la información importante.",
     newChatTitle: "Nuevo chat",
     errorMsg: "¡Ups, se me soltó el lazo! Algo salió mal con el servidor. Intenta de nuevo en un momento. 🎀",
@@ -125,7 +124,6 @@ const i18n = {
     copyMessage: "Copiar",
     copiedMessage: "¡Copiado!",
     notConfiguredMsg: "¡Julia AI todavía no está conectada a un cerebro! El dueño del sitio debe configurar el backend (ver Mimi worker.js) antes de que pueda chatear de verdad. 🎀",
-    imageModeOn: "🖼️ El modo imagen está activado — tu próximo mensaje generará una imagen.",
     generatingImage: "Dibujando tu imagen..."
   },
   ko: {
@@ -141,7 +139,6 @@ const i18n = {
     recent: "최근 채팅",
     footer: "🎀 마음을 담아 만들었어요",
     placeholder: "줄리아 AI에게 메시지 보내기...",
-    imagePlaceholder: "줄리아가 그려줄 이미지를 설명해주세요...",
     disclaimer: "줄리아 AI도 실수를 할 수 있어요. 중요한 정보는 다시 확인하세요.",
     newChatTitle: "새 채팅",
     errorMsg: "앗, 리본이 풀렸어! 서버에 문제가 생겼어요. 잠시 후 다시 시도해주세요. 🎀",
@@ -152,7 +149,6 @@ const i18n = {
     copyMessage: "복사",
     copiedMessage: "복사됨!",
     notConfiguredMsg: "줄리아 AI가 아직 두뇌에 연결되지 않았어요! 사이트 관리자가 백엔드(Mimi worker.js 참고)를 먼저 설정해야 진짜로 대화할 수 있어요. 🎀",
-    imageModeOn: "🖼️ 이미지 모드가 켜져 있어요 — 다음 메시지로 그림을 생성해요.",
     generatingImage: "이미지를 그리는 중..."
   }
 };
@@ -169,9 +165,8 @@ function applyLanguage(){
   document.getElementById('recentLabel').textContent = t('recent');
   document.getElementById('sidebarFooter').textContent = t('footer');
   document.getElementById('disclaimerText').textContent = t('disclaimer');
-  input.placeholder = imageMode ? t('imagePlaceholder') : t('placeholder');
+  input.placeholder = t('placeholder');
   attachBtn.setAttribute('aria-label', t('attachFile'));
-  document.getElementById('imageModeBannerText').textContent = t('imageModeOn');
   document.querySelectorAll('.chip').forEach(chip => {
     const key = chip.dataset.key;
     chip.textContent = t(key);
@@ -207,13 +202,10 @@ const newChatBtn = document.getElementById('newChatBtn');
 const attachBtn = document.getElementById('attachBtn');
 const fileInput = document.getElementById('fileInput');
 const attachPreview = document.getElementById('attachPreview');
-const imageModeBtn = document.getElementById('imageModeBtn');
-const imageModeBanner = document.getElementById('imageModeBanner');
 
 let conversations = [];      // {id, title, lang, customTitle, messages:[{role, content, attachments}]}
 let currentId = null;
 let pendingAttachments = []; // [{id, name, mimeType, dataUrl, base64}]
-let imageMode = false;       // when true, the next send() generates an image instead of chatting
 
 function uid(){ return Math.random().toString(36).slice(2,9); }
 
@@ -505,7 +497,7 @@ function commitEditMessage(idx, newText){
   getAIResponse(conv);
 }
 
-function appendTyping(){
+function appendTyping(label){
   const msg = document.createElement('div');
   msg.className = 'msg ai';
   msg.id = 'typingMsg';
@@ -516,7 +508,7 @@ function appendTyping(){
   col.className = 'msg-col';
   const bubble = document.createElement('div');
   bubble.className = 'bubble';
-  bubble.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
+  bubble.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>' + (label ? '<span class="typing-label">' + label + '</span>' : '');
   col.appendChild(bubble);
   msg.appendChild(avatar);
   msg.appendChild(col);
@@ -604,16 +596,6 @@ function appendSystemNotice(text){
   chatScroll.scrollTop = chatScroll.scrollHeight;
 }
 
-/* ---------------- Image mode toggle ---------------- */
-
-imageModeBtn.addEventListener('click', () => {
-  imageMode = !imageMode;
-  imageModeBtn.classList.toggle('active', imageMode);
-  imageModeBanner.classList.toggle('show', imageMode);
-  input.placeholder = imageMode ? t('imagePlaceholder') : t('placeholder');
-  input.focus();
-});
-
 /* ---------------- Composer ---------------- */
 
 function autoResize(){
@@ -662,8 +644,6 @@ async function send(){
     conv.lang = currentLang;
   }
 
-  const wasImageMode = imageMode;
-
   hero.style.display = 'none';
   conv.messages.push({ role:'user', content:text, attachments });
   input.value = '';
@@ -675,19 +655,18 @@ async function send(){
   renderHistory();
   saveState();
 
-  // Turn image mode off right after use so it doesn't stay on by accident.
-  if(wasImageMode){
-    imageMode = false;
-    imageModeBtn.classList.remove('active');
-    imageModeBanner.classList.remove('show');
-    input.placeholder = t('placeholder');
-  }
+  await getAIResponse(conv);
+}
 
-  if(wasImageMode && text){
-    await getImageResponse(conv, text);
-  } else {
-    await getAIResponse(conv);
-  }
+function buildSystemPrompt(){
+  return "You are Julia AI, a warm, cheerful, kind AI companion with a cute cat-and-bow personality. " +
+    "You can see any images the user attaches (photos, screenshots, etc) — describe or use them naturally when relevant. " +
+    "Keep replies friendly, clear, and not overly long unless asked. Light, tasteful use of an occasional emoji like 🎀 or 🐾 is welcome but don't overdo it. " +
+    "Always respond in " + t('languageName') + ", regardless of what language the user writes in, unless they explicitly ask you to switch languages.\n\n" +
+    "IMAGE REQUESTS: this app CAN actually generate real images through a separate tool that you trigger yourself — you don't draw them, but you decide when to ask for one. " +
+    "If, and only if, the user is directly asking you right now to draw, generate, create, make, or paint a specific picture, image, photo, illustration, drawing, sketch, or artwork (in ANY language, including Filipino/Taglish), reply with ONLY the following and absolutely nothing else — no greeting, no emoji, no explanation, no text before or after it:\n" +
+    "IMAGE_REQUEST::<a single vivid, richly detailed image-generation prompt written in English that captures exactly what they asked for>\n" +
+    "Do NOT use this format if the user is only asking whether you can generate images, asking about the feature in general, making small talk about pictures, or if their message isn't actually a concrete request for a specific image right now — in those cases just answer normally as Julia, in plain words, with no marker at all.";
 }
 
 async function getAIResponse(conv){
@@ -710,7 +689,7 @@ async function getAIResponse(conv){
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        system: "You are Julia AI, a warm, cheerful, kind AI companion with a cute cat-and-bow personality. You can see any images the user attaches (photos, screenshots, etc) — describe or use them naturally when relevant. Keep replies friendly, clear, and not overly long unless asked. Light, tasteful use of an occasional emoji like 🎀 or 🐾 is welcome but don't overdo it. Always respond in " + t('languageName') + ", regardless of what language the user writes in, unless they explicitly ask you to switch languages.",
+        system: buildSystemPrompt(),
         messages: apiMessages
       })
     });
@@ -719,10 +698,10 @@ async function getAIResponse(conv){
       throw new Error('Request failed: ' + response.status);
     }
 
-    typingMsg.remove();
-    const bubble = appendBubble('ai', '');
+    // We buffer the full reply before showing anything. This is what lets us
+    // silently catch an IMAGE_REQUEST:: marker and swap over to drawing
+    // instead of ever flashing that raw marker text at the user.
     let fullText = '';
-
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
     let buffer = '';
@@ -742,16 +721,25 @@ async function getAIResponse(conv){
           // Gemini streamGenerateContent (alt=sse) shape:
           // { candidates: [ { content: { parts: [ { text: "..." } ] } } ] }
           const piece = evt?.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
-          if(piece){
-            fullText += piece;
-            bubble.textContent = fullText;
-            chatScroll.scrollTop = chatScroll.scrollHeight;
-          }
+          if(piece) fullText += piece;
         }catch(e){ /* ignore partial json */ }
       }
     }
 
-    conv.messages.push({ role:'ai', content: fullText || "Sorry, I didn't quite catch that. Could you try again?" });
+    const imageMatch = fullText.match(IMAGE_MARKER_RE);
+    if(imageMatch && imageMatch[1].trim()){
+      // Julia decided this was an image request — swap the typing bubble's
+      // label and hand off to the image endpoint instead of showing text.
+      const bubble = typingMsg.querySelector('.bubble');
+      if(bubble) bubble.innerHTML = '<div class="typing"><span></span><span></span><span></span></div><span class="typing-label">' + t('generatingImage') + '</span>';
+      await getImageResponse(conv, imageMatch[1].trim(), typingMsg);
+      return;
+    }
+
+    typingMsg.remove();
+    const finalText = fullText.trim() || "Sorry, I didn't quite catch that. Could you try again?";
+    appendBubble('ai', finalText);
+    conv.messages.push({ role:'ai', content: finalText });
     saveState();
 
   }catch(err){
@@ -765,10 +753,8 @@ async function getAIResponse(conv){
   }
 }
 
-async function getImageResponse(conv, prompt){
-  const typingMsg = appendTyping();
-  const typingBubble = typingMsg.querySelector('.bubble');
-  if(typingBubble) typingBubble.innerHTML = '<div class="typing"><span></span><span></span><span></span></div><span class="typing-label">' + t('generatingImage') + '</span>';
+async function getImageResponse(conv, prompt, existingTypingMsg){
+  const typingMsg = existingTypingMsg || appendTyping(t('generatingImage'));
 
   try{
     if(API_ENDPOINT.includes('YOUR-SUBDOMAIN')){
@@ -784,7 +770,9 @@ async function getImageResponse(conv, prompt){
     const data = await response.json();
 
     if(!response.ok || !data || !data.imageBase64){
-      throw new Error(data && data.error ? data.error : 'Image generation failed');
+      const detail = data && data.error ? data.error : 'Image generation failed';
+      console.error('Image generation error:', detail);
+      throw new Error(detail);
     }
 
     typingMsg.remove();
