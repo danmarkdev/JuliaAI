@@ -416,7 +416,7 @@ function appendBubble(role, text, idx, attachments, animate=true){
     editBtn.onclick = () => beginEditMessage(idx, col, bubble);
     tools.appendChild(editBtn);
     col.appendChild(tools);
-  } else if(role === 'ai' && text){
+  } else if(role === 'ai' && (text || (attachments && attachments.length))){
     const tools = document.createElement('div');
     tools.className = 'msg-tools';
     const copyBtn = document.createElement('button');
@@ -426,12 +426,25 @@ function appendBubble(role, text, idx, attachments, animate=true){
     const copyIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>';
     const checkIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
     copyBtn.innerHTML = copyIcon;
+    const showCopied = () => {
+      copyBtn.innerHTML = checkIcon;
+      copyBtn.classList.add('copied');
+      setTimeout(() => { copyBtn.innerHTML = copyIcon; copyBtn.classList.remove('copied'); }, 1400);
+    };
     copyBtn.onclick = async () => {
       try{
-        await navigator.clipboard.writeText(text);
-        copyBtn.innerHTML = checkIcon;
-        copyBtn.classList.add('copied');
-        setTimeout(() => { copyBtn.innerHTML = copyIcon; copyBtn.classList.remove('copied'); }, 1400);
+        if(text){
+          // There's a caption — copy that (matches the old behaviour).
+          await navigator.clipboard.writeText(text);
+        } else if(attachments && attachments.length){
+          // No caption (e.g. a generated picture with nothing said) — copy
+          // the image itself so it can be pasted elsewhere.
+          const a = attachments[0];
+          const dataUrl = a.dataUrl || ('data:' + a.mimeType + ';base64,' + a.data);
+          const blob = await (await fetch(dataUrl)).blob();
+          await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+        }
+        showCopied();
       }catch(e){ console.error('Copy failed', e); }
     };
     tools.appendChild(copyBtn);
