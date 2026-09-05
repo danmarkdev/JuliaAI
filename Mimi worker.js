@@ -1,6 +1,6 @@
 const ALLOWED_ORIGIN = "*"; // e.g. "https://danmarkdev.github.io" for production
-const GEMINI_MODEL = "gemini-3.5-flash-lite"; // free tier: chat model, 1,500 chat a day
-const IMAGE_MODEL = "gemini-3.1-flash-image"; // "Nano Banana 2" — gemini-2.5-flash-image is being retired Oct 2026, swap this line again if this one is retired
+const GEMINI_MODEL = "gemini-3.5-flash-lite"; // free tier: chat model (Google Gemini)
+const IMAGE_MODEL = "@cf/black-forest-labs/flux-1-schnell"; // free image model (Cloudflare Workers AI, not Google) — requires an "AI" binding on this Worker, see Settings > Bindings
 const MAX_ATTACHMENTS_PER_MESSAGE = 4;
 
 export default {
@@ -109,15 +109,18 @@ export default {
 };
 
 // ---------------------------------------------------------------
-// Image generation handler
+// Image generation handler — runs on Cloudflare Workers AI, which is
+// genuinely free (10,000 Neurons/day, resets daily, no card needed) as
+// long as this Worker has an "AI" binding (Settings > Bindings > Add >
+// Workers AI > name it "AI"). This does NOT use GEMINI_API_KEY at all.
 // ---------------------------------------------------------------
 async function handleImageGeneration(request, env, corsHeaders) {
   if (request.method !== "POST") {
     return new Response("Method not allowed", { status: 405, headers: corsHeaders });
   }
-  if (!env.GEMINI_API_KEY) {
+  if (!env.AI) {
     return new Response(
-      JSON.stringify({ error: "Server misconfigured: GEMINI_API_KEY secret is not set." }),
+      JSON.stringify({ error: "Server misconfigured: this Worker has no 'AI' binding. Add one in Settings > Bindings > Workers AI, named AI." }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
@@ -138,65 +141,33 @@ async function handleImageGeneration(request, env, corsHeaders) {
     });
   }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${IMAGE_MODEL}:generateContent`;
   try {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-goog-api-key": env.GEMINI_API_KEY,
-      },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { responseModalities: ["TEXT", "IMAGE"] },
-      }),
+    // flux-1-schnell: prompt capped at 2048 chars, steps default 4 (max 8 — it's
+    // a distilled few-step model, more steps just burns neurons for no gain).
+    const result = await env.AI.run(IMAGE_MODEL, {
+      prompt: prompt.slice(0, 2048),
+      steps: 4,
+      seed: Math.floor(Math.random() * 1000000),
     });
 
-    const data = await res.json();
-
-    if (!res.ok) {
-      // Surface Google's real error (e.g. "billing required", "model not found",
-      // "quota exceeded") instead of a generic failure — makes this much easier
-      // to debug from the browser console / Cloudflare logs.
-      const upstreamMessage = (data && data.error && data.error.message) || `Image generation failed (HTTP ${res.status})`;
-      console.log("Nano Banana error:", res.status, JSON.stringify(data));
+    // Cloudflare's image models return { image: "<base64 jpeg>" }.
+    if (!result || !result.image) {
+      console.log("Workers AI returned no image data:", JSON.stringify(result));
       return new Response(
-        JSON.stringify({ error: upstreamMessage, status: res.status }),
-        { status: res.status, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const parts = (data && data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) || [];
-    let text = "";
-    let imageBase64 = null;
-    let mimeType = "image/png";
-
-    for (const part of parts) {
-      if (part.text) text += part.text;
-      const inline = part.inlineData || part.inline_data;
-      if (inline && inline.data) {
-        imageBase64 = inline.data;
-        mimeType = inline.mimeType || inline.mime_type || mimeType;
-      }
-    }
-
-    if (!imageBase64) {
-      // The model responded successfully but didn't actually return image bytes
-      // (can happen on safety blocks) — treat this as an error too instead of
-      // silently showing nothing.
-      console.log("Nano Banana returned no image data:", JSON.stringify(data));
-      return new Response(
-        JSON.stringify({ error: text || "The model didn't return an image for that prompt." }),
+        JSON.stringify({ error: "The model didn't return an image for that prompt." }),
         { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    return new Response(JSON.stringify({ text, imageBase64, mimeType }), {
+    return new Response(JSON.stringify({ text: "", imageBase64: result.image, mimeType: "image/jpeg" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
+    // Common causes here: no "AI" binding configured, or the free daily
+    // Neuron allocation (10,000/day) has been used up for the account.
+    console.log("Workers AI error:", err.message);
     return new Response(
-      JSON.stringify({ error: "Upstream request failed", detail: err.message }),
+      JSON.stringify({ error: err.message || "Image generation failed" }),
       { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
