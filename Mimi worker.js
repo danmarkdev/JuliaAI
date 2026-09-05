@@ -147,7 +147,6 @@ async function handleImageGeneration(request, env, corsHeaders) {
     const result = await env.AI.run(IMAGE_MODEL, {
       prompt: prompt.slice(0, 2048),
       steps: 4,
-      seed: Math.floor(Math.random() * 1000000),
     });
 
     // Cloudflare's image models return { image: "<base64 jpeg>" }.
