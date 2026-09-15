@@ -4,7 +4,7 @@ A cat-themed AI chat companion that responds in five languages, generates images
 
 ## Features
 
--  **Chat** in English, Filipino, 日本語, Español, or 한국어 - powered by Google's Gemini API 
+-  **Chat** in English, Filipino, Chinese, Español, or Korea - powered by Google's Gemini API 
 -  **Image generation** - it decides on her own when a request is actually for a picture and generates it using Cloudflare Workers AI 
 -  **Image understanding** - attach a photo or screenshot and ask about it
 -  **Multiple conversations** with rename/delete, saved per language
