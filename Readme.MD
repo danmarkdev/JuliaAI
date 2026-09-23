@@ -1,6 +1,6 @@
 # 🎀 Julia AI 🎀
 
-A cat-themed AI chat companion that responds in five languages, generates images from a simple text request, and understands photos you share through natural conversation.
+A Hello kitty themed AI chat companion that responds in five languages, generates images from a simple text request, and understands photos you share through natural conversation.
 
 ## Features
 
