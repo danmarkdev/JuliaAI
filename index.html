@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🎀 Julia AI 🎀</title>
+<link rel="icon" href="kitty.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
@@ -15,25 +16,7 @@
 
   <aside class="sidebar" id="sidebar">
     <div class="brand">
-      <svg class="brand-mark" viewBox="0 0 100 100">
-        <circle cx="50" cy="58" r="34" fill="#ffe1f2"/>
-        <circle cx="50" cy="58" r="29" fill="#ffffff" stroke="#2a0518" stroke-width="3.5"/>
-        <path d="M27 36 Q22 16 39 25" fill="#ffffff" stroke="#2a0518" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M73 36 Q78 16 61 25" fill="#ffffff" stroke="#2a0518" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <ellipse cx="34" cy="62" rx="5" ry="4" fill="#ffb3da" opacity="0.9"/>
-        <ellipse cx="66" cy="62" rx="5" ry="4" fill="#ffb3da" opacity="0.9"/>
-        <circle cx="39" cy="54" r="2.6" fill="#2a0518"/>
-        <circle cx="61" cy="54" r="2.6" fill="#2a0518"/>
-        <path d="M46 66 Q50 70 54 66" fill="none" stroke="#2a0518" stroke-width="2.6" stroke-linecap="round"/>
-        <line x1="16" y1="58" x2="30" y2="59" stroke="#2a0518" stroke-width="2" stroke-linecap="round"/>
-        <line x1="16" y1="65" x2="30" y2="64" stroke="#2a0518" stroke-width="2" stroke-linecap="round"/>
-        <line x1="70" y1="59" x2="84" y2="58" stroke="#2a0518" stroke-width="2" stroke-linecap="round"/>
-        <line x1="70" y1="64" x2="84" y2="65" stroke="#2a0518" stroke-width="2" stroke-linecap="round"/>
-        <g transform="translate(73,30) rotate(15)">
-          <path d="M0 0 C-13 -10 -18 2 0 6 C-18 10 -13 22 0 12 C13 22 18 10 0 6 C18 2 13 -10 0 0 Z" fill="#fe019a" stroke="#2a0518" stroke-width="2.4" stroke-linejoin="round"/>
-          <circle cx="0" cy="6" r="3.4" fill="#ffffff"/>
-        </g>
-      </svg>
+      <img class="brand-mark" src="kitty.png" alt="">
       <span class="brand-name">🎀 Julia AI 🎀</span>
     </div>
 
@@ -51,7 +34,7 @@
   <main class="main">
     <div class="topbar">
       <button class="menu-btn" id="menuBtn" aria-label="Toggle menu">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffe3f4" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e60012" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
       <span class="model-pill" id="modelPill">🎀 Julia AI 🎀 · your kitty companion</span>
       <div class="topbar-right">
@@ -68,24 +51,7 @@
 
     <div class="chat-scroll" id="chatScroll">
       <div class="hero" id="hero">
-        <svg class="hero-mark" viewBox="0 0 100 100">
-          <circle cx="50" cy="58" r="29" fill="#ffffff" stroke="#2a0518" stroke-width="3.5"/>
-          <path d="M27 36 Q22 16 39 25" fill="#ffffff" stroke="#2a0518" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M73 36 Q78 16 61 25" fill="#ffffff" stroke="#2a0518" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <ellipse cx="34" cy="62" rx="5" ry="4" fill="#ffb3da" opacity="0.9"/>
-          <ellipse cx="66" cy="62" rx="5" ry="4" fill="#ffb3da" opacity="0.9"/>
-          <circle cx="39" cy="54" r="2.6" fill="#2a0518"/>
-          <circle cx="61" cy="54" r="2.6" fill="#2a0518"/>
-          <path d="M46 66 Q50 70 54 66" fill="none" stroke="#2a0518" stroke-width="2.6" stroke-linecap="round"/>
-          <line x1="16" y1="58" x2="30" y2="59" stroke="#2a0518" stroke-width="2" stroke-linecap="round"/>
-          <line x1="16" y1="65" x2="30" y2="64" stroke="#2a0518" stroke-width="2" stroke-linecap="round"/>
-          <line x1="70" y1="59" x2="84" y2="58" stroke="#2a0518" stroke-width="2" stroke-linecap="round"/>
-          <line x1="70" y1="64" x2="84" y2="65" stroke="#2a0518" stroke-width="2" stroke-linecap="round"/>
-          <g transform="translate(73,30) rotate(15)">
-            <path d="M0 0 C-13 -10 -18 2 0 6 C-18 10 -13 22 0 12 C13 22 18 10 0 6 C18 2 13 -10 0 0 Z" fill="#fe019a" stroke="#2a0518" stroke-width="2.4" stroke-linejoin="round"/>
-            <circle cx="0" cy="6" r="3.4" fill="#ffffff"/>
-          </g>
-        </svg>
+        <img class="hero-mark" src="kitty.png" alt="">
         <h1 id="heroTitle">Hi, I'm 🎀 Julia AI 🎀</h1>
         <p id="heroSubtitle">Ask me anything, I'm listening with my whole bow.</p>
         <div class="chips" id="chipsRow">
