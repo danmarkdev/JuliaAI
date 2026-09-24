@@ -618,3 +618,62 @@ html, body, .app { width:100%; height:100%; }
   .msg{ animation:none; }
   .typing span{ animation:none; }
 }
+
+/* drag & drop + file attachments */
+body.dragging .main::after{
+  content:"Drop files here";
+  position:absolute; inset:12px;
+  border:3px dashed var(--bow);
+  border-radius:24px;
+  background:rgba(255,240,247,.88);
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Baloo 2', sans-serif; font-size:22px; color:var(--bow);
+  z-index:30; pointer-events:none;
+}
+.attach-file{
+  width:100%; height:100%;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--pink-50); color:var(--bow);
+  font-family:'Baloo 2', sans-serif; font-weight:700; font-size:14px;
+}
+.file-badge{
+  max-width:200px;
+  padding:6px 10px;
+  border-radius:10px;
+  background:var(--pink-50);
+  border:1px solid var(--pink-200);
+  color:var(--ink);
+  font-size:12.5px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+
+/* file previews live inside the message box */
+.composer{ flex-wrap:wrap; }
+.composer .attach-preview{
+  flex:0 0 100%;
+  order:-1;
+  max-width:none;
+  margin:0;
+  padding:2px 6px 6px;
+}
+
+/* message action buttons (always visible on AI replies) */
+.msg.ai .msg-tools{ opacity:1; gap:6px; height:28px; }
+.msg.ai .msg-copy-btn,
+.msg-speak-btn, .msg-like-btn, .msg-dislike-btn, .msg-retry-btn{
+  width:28px; height:28px;
+  border-radius:50%;
+  border:1px solid var(--pink-200);
+  background:#ffffff;
+  color:var(--bow);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; padding:0;
+  transition: background .15s ease, color .15s ease, transform .15s ease;
+}
+.msg.ai .msg-copy-btn svg,
+.msg-speak-btn svg, .msg-like-btn svg, .msg-dislike-btn svg, .msg-retry-btn svg{ width:14px; height:14px; }
+.msg.ai .msg-copy-btn:hover,
+.msg-speak-btn:hover, .msg-like-btn:hover, .msg-dislike-btn:hover, .msg-retry-btn:hover{ background:var(--pink-100); }
+.msg-speak-btn:active, .msg-like-btn:active, .msg-dislike-btn:active, .msg-retry-btn:active{ transform:scale(.9); }
+.msg-speak-btn.active, .msg-like-btn.active, .msg-dislike-btn.active{ background:var(--bow); color:#ffffff; border-color:var(--bow); }
+.msg-like-btn.active svg, .msg-dislike-btn.active svg{ fill:currentColor; }
