@@ -40,13 +40,14 @@ const i18n = {
     editMessage: "Edit message",
     copyMessage: "Copy",
     copiedMessage: "Copied!",
+    readAloud: "Read aloud", stopReading: "Stop", goodResponse: "Good response", badResponse: "Bad response", retryMessage: "Try again",
     saveEdit: "Save & resend",
     cancelEdit: "Cancel",
     attachFile: "Attach a file",
     removeAttachment: "Remove",
-    attachTooBig: "That file is too big. Please attach images under " + MAX_ATTACHMENT_MB + "MB.",
-    attachTooMany: "You can attach up to " + MAX_ATTACHMENTS + " images at once.",
-    attachNotImage: "Julia AI can currently only see image files (screenshots, photos, etc).",
+    attachTooBig: "That file is too big. Please attach files under " + MAX_ATTACHMENT_MB + "MB.",
+    attachTooMany: "You can attach up to " + MAX_ATTACHMENTS + " files at once.",
+    attachNotImage: "Julia AI can currently read images, PDFs, and .txt files.",
     notConfiguredMsg: "Julia AI isn't connected to a brain yet! The site owner needs to set up the backend (see Mimi worker.js) before I can chat for real.",
     generatingImage: "Drawing your image..."
   },
@@ -72,6 +73,7 @@ const i18n = {
     deleteChat: "Burahin ang chat",
     copyMessage: "Kopyahin",
     copiedMessage: "Nakopya!",
+    readAloud: "Basahin nang malakas", stopReading: "Ihinto", goodResponse: "Magandang sagot", badResponse: "Hindi magandang sagot", retryMessage: "Subukan ulit",
     notConfiguredMsg: "Hindi pa naka-connect si Julia AI sa utak niya! Kailangan munang i-set up ng may-ari ng site ang backend (tingnan ang Mimi worker.js) bago ako makapag-chat nang totoo.",
     generatingImage: "Ginuguhit ang larawan mo..."
   },
@@ -97,6 +99,7 @@ const i18n = {
     deleteChat: "チャットを削除",
     copyMessage: "コピー",
     copiedMessage: "コピーしました！",
+    readAloud: "読み上げ", stopReading: "停止", goodResponse: "良い回答", badResponse: "悪い回答", retryMessage: "やり直す",
     notConfiguredMsg: "まだジュリアAIの頭脳が接続されていないよ！ サイトの管理者がバックエンド（Mimi worker.js）を設定する必要があるの。",
     generatingImage: "画像を描いています..."
   },
@@ -122,6 +125,7 @@ const i18n = {
     deleteChat: "Eliminar chat",
     copyMessage: "Copiar",
     copiedMessage: "¡Copiado!",
+    readAloud: "Leer en voz alta", stopReading: "Detener", goodResponse: "Buena respuesta", badResponse: "Mala respuesta", retryMessage: "Reintentar",
     notConfiguredMsg: "¡Julia AI todavía no está conectada a un cerebro! El dueño del sitio debe configurar el backend (ver Mimi worker.js) antes de que pueda chatear de verdad.",
     generatingImage: "Dibujando tu imagen..."
   },
@@ -147,6 +151,7 @@ const i18n = {
     deleteChat: "채팅 삭제",
     copyMessage: "복사",
     copiedMessage: "복사됨!",
+    readAloud: "소리 내어 읽기", stopReading: "중지", goodResponse: "좋은 답변", badResponse: "나쁜 답변", retryMessage: "다시 시도",
     notConfiguredMsg: "줄리아 AI가 아직 두뇌에 연결되지 않았어요! 사이트 관리자가 백엔드(Mimi worker.js 참고)를 먼저 설정해야 진짜로 대화할 수 있어요.",
     generatingImage: "이미지를 그리는 중..."
   }
@@ -208,7 +213,8 @@ let pendingAttachments = []; // [{id, name, mimeType, dataUrl, base64}]
 function uid(){ return Math.random().toString(36).slice(2,9); }
 
 // Julia's avatar in chat (the kitty image).
-const AVATAR_SVG = '<img src="hello_kitty.png" alt="">';
+const KITTY_IMG = window.KITTY_SRC || 'hello_kitty.png'; // kitty-icon.js is optional
+const AVATAR_SVG = '<img src="' + KITTY_IMG + '" alt="">';
 
 /* ---------------- Persistence (localStorage) ---------------- */
 
@@ -350,6 +356,7 @@ function deleteConversation(id){
 /* ---------------- Chat rendering ---------------- */
 
 function renderChat(){
+  stopSpeaking();
   const conv = currentConv();
   chatInner.innerHTML = '';
   if (!conv || conv.messages.length === 0){
@@ -366,6 +373,13 @@ function attachmentsToHtmlGrid(attachments){
   const grid = document.createElement('div');
   grid.className = 'bubble-attachments';
   attachments.forEach(a => {
+    if(a.mimeType && !a.mimeType.startsWith('image/')){
+      const badge = document.createElement('div');
+      badge.className = 'file-badge';
+      badge.textContent = a.name || 'file';
+      grid.appendChild(badge);
+      return;
+    }
     const img = document.createElement('img');
     img.src = a.dataUrl || ('data:' + a.mimeType + ';base64,' + a.data);
     img.alt = a.name || 'attachment';
@@ -373,6 +387,103 @@ function attachmentsToHtmlGrid(attachments){
     grid.appendChild(img);
   });
   return grid;
+}
+
+/* ---------------- Message action buttons: read aloud / like / dislike / retry ---------------- */
+
+const ICON_SPEAK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 010 7M19 5a9 9 0 010 14"/></svg>';
+const ICON_STOP = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
+const ICON_LIKE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z"/><path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg>';
+const ICON_DISLIKE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 003 3l4-9V2H5.72a2 2 0 00-2 1.7l-1.38 9a2 2 0 002 2.3H10z"/><path d="M17 2h2.67A2.31 2.31 0 0122 4v7a2.31 2.31 0 01-2.33 2H17"/></svg>';
+const ICON_RETRY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>';
+
+const SPEECH_LANG = { en:'en-US', fil:'fil-PH', ja:'ja-JP', es:'es-ES', ko:'ko-KR' };
+let speakingBtn = null;
+
+function makeToolBtn(className, label, iconHtml){
+  const b = document.createElement('button');
+  b.className = className;
+  b.type = 'button';
+  b.title = label;
+  b.setAttribute('aria-label', label);
+  b.innerHTML = iconHtml;
+  return b;
+}
+
+function resetSpeakBtn(){
+  if(speakingBtn){
+    speakingBtn.classList.remove('active');
+    speakingBtn.innerHTML = ICON_SPEAK;
+    speakingBtn.title = t('readAloud');
+    speakingBtn = null;
+  }
+}
+function stopSpeaking(){
+  if('speechSynthesis' in window) window.speechSynthesis.cancel();
+  resetSpeakBtn();
+}
+function splitForSpeech(text){
+  const sentences = text.replace(/[*_#`>~]/g, '').split(/(?<=[.!?。！？])\s+|\n+/).filter(s => s.trim());
+  const chunks = [];
+  let cur = '';
+  sentences.forEach(s => {
+    if(cur && (cur + ' ' + s).length > 180){ chunks.push(cur); cur = s; }
+    else cur = cur ? cur + ' ' + s : s;
+  });
+  if(cur) chunks.push(cur);
+  return chunks;
+}
+function toggleSpeak(text, btn){
+  if(!('speechSynthesis' in window)) return;
+  if(speakingBtn === btn){ stopSpeaking(); return; }
+  stopSpeaking();
+  const chunks = splitForSpeech(text);
+  if(chunks.length === 0) return;
+  speakingBtn = btn;
+  btn.classList.add('active');
+  btn.innerHTML = ICON_STOP;
+  btn.title = t('stopReading');
+  chunks.forEach((chunk, i) => {
+    const u = new SpeechSynthesisUtterance(chunk);
+    u.lang = SPEECH_LANG[currentLang] || 'en-US';
+    if(i === chunks.length - 1){
+      u.onend = () => { if(speakingBtn === btn) resetSpeakBtn(); };
+      u.onerror = () => { if(speakingBtn === btn) resetSpeakBtn(); };
+    }
+    window.speechSynthesis.speak(u);
+  });
+}
+window.addEventListener('beforeunload', () => { if('speechSynthesis' in window) window.speechSynthesis.cancel(); });
+
+function removeOldRetryButtons(){
+  chatInner.querySelectorAll('.msg-retry-btn').forEach(b => b.remove());
+}
+
+// Regenerate the newest reply: drop the AI answer(s) after the last user message and ask again.
+function retryLast(conv){
+  if(!conv || document.getElementById('typingMsg')) return;
+  while(conv.messages.length && conv.messages[conv.messages.length - 1].role === 'ai'){
+    conv.messages.pop();
+  }
+  if(conv.messages.length === 0) return;
+  stopSpeaking();
+  renderChat();
+  saveState();
+  getAIResponse(conv);
+}
+
+// Adds a "try again" button to an error bubble.
+function addRetry(bubble, conv){
+  if(!bubble || !bubble.parentElement) return;
+  let tools = bubble.parentElement.querySelector('.msg-tools');
+  if(!tools){
+    tools = document.createElement('div');
+    tools.className = 'msg-tools';
+    bubble.parentElement.appendChild(tools);
+  }
+  const retryBtn = makeToolBtn('msg-retry-btn', t('retryMessage'), ICON_RETRY);
+  retryBtn.onclick = () => retryLast(conv);
+  tools.appendChild(retryBtn);
 }
 
 function appendBubble(role, text, idx, attachments, animate=true){
@@ -417,9 +528,14 @@ function appendBubble(role, text, idx, attachments, animate=true){
   } else if(role === 'ai' && (text || (attachments && attachments.length))){
     const tools = document.createElement('div');
     tools.className = 'msg-tools';
+    const conv = currentConv();
+    const stored = (conv && typeof idx === 'number') ? conv.messages[idx] : null;
+
+    // Copy
     const copyBtn = document.createElement('button');
     copyBtn.className = 'msg-copy-btn';
     copyBtn.type = 'button';
+    copyBtn.title = t('copyMessage');
     copyBtn.setAttribute('aria-label', t('copyMessage'));
     const copyIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>';
     const checkIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>';
@@ -444,6 +560,36 @@ function appendBubble(role, text, idx, attachments, animate=true){
       }catch(e){ console.error('Copy failed', e); }
     };
     tools.appendChild(copyBtn);
+
+    // Read aloud
+    if(text && 'speechSynthesis' in window){
+      const speakBtn = makeToolBtn('msg-speak-btn', t('readAloud'), ICON_SPEAK);
+      speakBtn.onclick = () => toggleSpeak(text, speakBtn);
+      tools.appendChild(speakBtn);
+    }
+
+    // Good / bad response
+    if(stored){
+      const likeBtn = makeToolBtn('msg-like-btn', t('goodResponse'), ICON_LIKE);
+      const dislikeBtn = makeToolBtn('msg-dislike-btn', t('badResponse'), ICON_DISLIKE);
+      const paint = () => {
+        likeBtn.classList.toggle('active', stored.feedback === 'like');
+        dislikeBtn.classList.toggle('active', stored.feedback === 'dislike');
+      };
+      likeBtn.onclick = () => { stored.feedback = stored.feedback === 'like' ? null : 'like'; paint(); saveState(); };
+      dislikeBtn.onclick = () => { stored.feedback = stored.feedback === 'dislike' ? null : 'dislike'; paint(); saveState(); };
+      paint();
+      tools.appendChild(likeBtn);
+      tools.appendChild(dislikeBtn);
+    }
+
+    // Try again (only on the newest reply)
+    if(stored && conv && idx === conv.messages.length - 1){
+      const retryBtn = makeToolBtn('msg-retry-btn', t('retryMessage'), ICON_RETRY);
+      retryBtn.onclick = () => retryLast(conv);
+      tools.appendChild(retryBtn);
+    }
+
     col.appendChild(tools);
   }
 
@@ -530,16 +676,26 @@ function appendTyping(label){
 
 attachBtn.addEventListener('click', () => fileInput.click());
 
-fileInput.addEventListener('change', async () => {
-  const files = Array.from(fileInput.files || []);
-  fileInput.value = ''; // allow re-selecting the same file later
+const ALLOWED_DOC_TYPES = ['application/pdf', 'text/plain'];
 
+function fileMimeType(file){
+  if(file.type) return file.type;
+  if(/\.pdf$/i.test(file.name)) return 'application/pdf';
+  if(/\.txt$/i.test(file.name)) return 'text/plain';
+  return '';
+}
+function isAllowedFile(file){
+  const mt = fileMimeType(file);
+  return mt.startsWith('image/') || ALLOWED_DOC_TYPES.includes(mt);
+}
+
+async function addFiles(files){
   for(const file of files){
     if(pendingAttachments.length >= MAX_ATTACHMENTS){
       appendSystemNotice(t('attachTooMany'));
       break;
     }
-    if(!file.type.startsWith('image/')){
+    if(!isAllowedFile(file)){
       appendSystemNotice(t('attachNotImage'));
       continue;
     }
@@ -553,7 +709,7 @@ fileInput.addEventListener('change', async () => {
       pendingAttachments.push({
         id: uid(),
         name: file.name,
-        mimeType: file.type,
+        mimeType: fileMimeType(file),
         dataUrl,
         base64
       });
@@ -561,6 +717,37 @@ fileInput.addEventListener('change', async () => {
   }
   renderAttachPreview();
   sendBtn.disabled = input.value.trim().length === 0 && pendingAttachments.length === 0;
+}
+
+fileInput.addEventListener('change', () => {
+  const files = Array.from(fileInput.files || []);
+  fileInput.value = ''; // allow re-selecting the same file later
+  addFiles(files);
+});
+
+// Drag & drop files anywhere on the page (e.g. straight from Chrome's downloads list)
+function hasFiles(e){
+  return e.dataTransfer && Array.from(e.dataTransfer.types || []).includes('Files');
+}
+['dragenter','dragover'].forEach(ev => document.addEventListener(ev, (e) => {
+  if(!hasFiles(e)) return;
+  e.preventDefault();
+  document.body.classList.add('dragging');
+}));
+document.addEventListener('dragleave', (e) => {
+  if(!e.relatedTarget) document.body.classList.remove('dragging');
+});
+document.addEventListener('drop', (e) => {
+  if(!hasFiles(e)) return;
+  e.preventDefault();
+  document.body.classList.remove('dragging');
+  addFiles(Array.from(e.dataTransfer.files || []));
+});
+
+// Paste screenshots / files straight into the message box
+input.addEventListener('paste', (e) => {
+  const files = Array.from((e.clipboardData && e.clipboardData.files) || []);
+  if(files.length){ e.preventDefault(); addFiles(files); }
 });
 
 function readFileAsDataUrl(file){
@@ -577,9 +764,17 @@ function renderAttachPreview(){
   pendingAttachments.forEach(a => {
     const chip = document.createElement('div');
     chip.className = 'attach-chip';
-    const img = document.createElement('img');
-    img.src = a.dataUrl;
-    img.alt = a.name;
+    let thumb;
+    if(a.mimeType.startsWith('image/')){
+      thumb = document.createElement('img');
+      thumb.src = a.dataUrl;
+      thumb.alt = a.name;
+    } else {
+      thumb = document.createElement('div');
+      thumb.className = 'attach-file';
+      thumb.title = a.name;
+      thumb.textContent = (a.name.split('.').pop() || 'FILE').slice(0,4).toUpperCase();
+    }
     const removeBtn = document.createElement('button');
     removeBtn.type = 'button';
     removeBtn.className = 'attach-chip-remove';
@@ -590,7 +785,7 @@ function renderAttachPreview(){
       renderAttachPreview();
       sendBtn.disabled = input.value.trim().length === 0 && pendingAttachments.length === 0;
     };
-    chip.appendChild(img);
+    chip.appendChild(thumb);
     chip.appendChild(removeBtn);
     attachPreview.appendChild(chip);
   });
@@ -668,8 +863,9 @@ async function send(){
 }
 
 function buildSystemPrompt(){
-  return "You are Julia AI, a warm, cheerful, kind AI companion with a cute cat personality. " +
+  return "You are Julia AI, a warm, cheerful, kind AI companion. Speak naturally and plainly. Never use cat puns, purring or meowing sounds, paw or whisker wordplay, or words like purr-fect, purr, paws or meow. " +
     "You can see any images the user attaches (photos, screenshots, etc) — describe or use them naturally when relevant. " +
+    "You can also read PDFs and text files the user attaches, and when the user shares a web link the app opens it for you, so read it and answer; never say you cannot open links. " +
     "Keep replies friendly, clear, and not overly long unless asked. Do not use emojis in your replies. " +
     "Always respond in " + t('languageName') + ", regardless of what language the user writes in, unless they explicitly ask you to switch languages.\n\n" +
     "IMAGE REQUESTS: this app CAN actually generate real images through a separate tool that you trigger yourself — you don't draw them, but you decide when to ask for one. " +
@@ -741,8 +937,9 @@ async function getAIResponse(conv){
 
     typingMsg.remove();
     const finalText = fullText.trim() || "Sorry, I didn't quite catch that. Could you try again?";
-    appendBubble('ai', finalText);
     conv.messages.push({ role:'ai', content: finalText });
+    removeOldRetryButtons();
+    appendBubble('ai', finalText, conv.messages.length - 1);
     saveState();
 
   }catch(err){
@@ -751,7 +948,7 @@ async function getAIResponse(conv){
     if(err.message === 'NOT_CONFIGURED'){
       appendBubble('ai', t('notConfiguredMsg'));
     } else {
-      appendBubble('ai', t('errorMsg'));
+      addRetry(appendBubble('ai', t('errorMsg')), conv);
     }
   }
 }
@@ -787,8 +984,9 @@ async function getImageResponse(conv, prompt, existingTypingMsg){
       generated: true
     }];
 
-    appendBubble('ai', caption, undefined, attachments);
     conv.messages.push({ role:'ai', content: caption, attachments });
+    removeOldRetryButtons();
+    appendBubble('ai', caption, conv.messages.length - 1, attachments);
     saveState();
 
   }catch(err){
@@ -797,7 +995,7 @@ async function getImageResponse(conv, prompt, existingTypingMsg){
     if(err.message === 'NOT_CONFIGURED'){
       appendBubble('ai', t('notConfiguredMsg'));
     } else {
-      appendBubble('ai', t('imageErrorMsg'));
+      addRetry(appendBubble('ai', t('imageErrorMsg')), conv);
     }
   }
 }
