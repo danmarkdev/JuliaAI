@@ -64,9 +64,9 @@
     </div>
 
     <div class="composer-wrap">
-      <div class="attach-preview" id="attachPreview"></div>
       <div class="composer">
-        <input type="file" id="fileInput" accept="image/*" multiple hidden>
+        <div class="attach-preview" id="attachPreview"></div>
+        <input type="file" id="fileInput" accept="image/*,application/pdf,text/plain,.pdf,.txt" multiple hidden>
         <button class="attach-btn" id="attachBtn" type="button" aria-label="Attach a file">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
         </button>
@@ -80,6 +80,7 @@
   </main>
 </div>
 
+<script src="kitty-icon.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
