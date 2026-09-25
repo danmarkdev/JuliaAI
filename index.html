@@ -4,10 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Julia AI</title>
-<link rel="icon" href="hello_kitty.png">
+<link rel="icon" href="hello_kitty.png?v=2">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=2">
 </head>
 <body>
 
@@ -16,7 +16,7 @@
 
   <aside class="sidebar" id="sidebar">
     <div class="brand">
-      <img class="brand-mark" src="hello_kitty.png" alt="">
+      <img class="brand-mark" src="hello_kitty.png?v=2" alt="">
       <span class="brand-name">Julia AI</span>
     </div>
 
@@ -36,21 +36,13 @@
       <button class="menu-btn" id="menuBtn" aria-label="Toggle menu">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e60012" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
-      <span class="model-pill" id="modelPill">Julia AI · your kitty companion</span>
-      <div class="topbar-right">
-        <select class="lang-select" id="langSelect">
-          <option value="en">🇺🇸 English</option>
-          <option value="fil">🇵🇭 Filipino</option>
-          <option value="ja">🇯🇵 日本語</option>
-          <option value="es">🇪🇸 Español</option>
-          <option value="ko">🇰🇷 한국어</option>
-        </select>
-      </div>
+      <!-- Pill removed from view. The element stays (hidden) so script.js keeps working without changes. -->
+      <span class="model-pill" id="modelPill" hidden></span>
     </div>
 
     <div class="chat-scroll" id="chatScroll">
       <div class="hero" id="hero">
-        <img class="hero-mark" src="hello_kitty.png" alt="">
+        <img class="hero-mark" src="hello_kitty.png?v=2" alt="">
         <h1 id="heroTitle">Hi, I'm Julia AI</h1>
         <p id="heroSubtitle">Ask me anything, I'm listening with my whole heart.</p>
         <div class="chips" id="chipsRow">
@@ -80,7 +72,8 @@
   </main>
 </div>
 
-<script src="kitty-icon.js"></script>
-<script src="script.js"></script>
+<script>window.KITTY_SRC = "hello_kitty.png?v=2";</script>
+<script src="script.js?v=2"></script>
+<script src="extras.js?v=3"></script>
 </body>
 </html>
