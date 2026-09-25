@@ -1,6 +1,6 @@
 # Julia AI 🎀
 
-A Hello Kitty-themed AI companion that chats naturally, generates images from your ideas, and reads photos, PDFs and shared links. Built with plain HTML, CSS and JavaScript on the frontend, with a serverless proxy handling the AI requests.
+A Hello Kitty-themed AI companion that chats naturally, generates images from your ideas, and reads photos, PDFs and shared links.
 
 ![Status](https://img.shields.io/badge/status-active-brightgreen) ![Made with](https://img.shields.io/badge/made%20with-HTML%20%7C%20CSS%20%7C%20JS-ff69b4)
 
