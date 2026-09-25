@@ -50,110 +50,6 @@ const i18n = {
     attachNotImage: "Julia AI can currently read images, PDFs, and .txt files.",
     notConfiguredMsg: "Julia AI isn't connected to a brain yet! The site owner needs to set up the backend (see Mimi worker.js) before I can chat for real.",
     generatingImage: "Drawing your image..."
-  },
-  fil: {
-    modelPill: "Julia AI · ang kaibigan mong pusa",
-    heroTitle: "Hi, ako si Julia AI",
-    heroSubtitle: "Itanong mo kahit ano, nakikinig ako nang buong-buo.",
-    chip1: "Kwentong kaalaman", chip2: "💌 Sumulat ng tula", chip3: "📋 Planuhin ang araw ko", chip4: "💡 Ipaliwanag nang simple",
-    prompt1: "Sabihan mo ako ng kawili-wiling kaalaman na hindi ko pa alam",
-    prompt2: "Sumulat ka ng maikli at malambing na tula tungkol sa pagkakaibigan",
-    prompt3: "Tulungan mo akong magplano ng maginhawang Linggo",
-    prompt4: "Ipaliwanag mo nang simple at friendly: paano gumagana ang internet?",
-    newChat: "Bagong chat",
-    recent: "Kamakailan",
-    footer: "Ginawa nang may pagmamahal para sa'yo",
-    placeholder: "Mag-message kay Julia AI...",
-    disclaimer: "Posibleng magkamali si Julia AI. I-double check ang mahahalagang impormasyon.",
-    newChatTitle: "Bagong chat",
-    errorMsg: "Ay, may pumalpak! May naganap na error sa server. Subukan ulit sandali.",
-    imageErrorMsg: "Ay, hindi ko naiguhit iyon! Subukan ulit sandali.",
-    languageName: "Filipino",
-    noChatsYet: "Wala pang chat sa wikang ito",
-    deleteChat: "Burahin ang chat",
-    copyMessage: "Kopyahin",
-    copiedMessage: "Nakopya!",
-    readAloud: "Basahin nang malakas", stopReading: "Ihinto", goodResponse: "Magandang sagot", badResponse: "Hindi magandang sagot", retryMessage: "Subukan ulit",
-    notConfiguredMsg: "Hindi pa naka-connect si Julia AI sa utak niya! Kailangan munang i-set up ng may-ari ng site ang backend (tingnan ang Mimi worker.js) bago ako makapag-chat nang totoo.",
-    generatingImage: "Ginuguhit ang larawan mo..."
-  },
-  ja: {
-    modelPill: "ジュリアAI ・あなたの猫の相棒",
-    heroTitle: "こんにちは、ジュリアAIです",
-    heroSubtitle: "なんでも聞いてね。耳を澄ませて待ってるよ。",
-    chip1: "豆知識", chip2: "💌 詩を書く", chip3: "📋 一日の予定", chip4: "💡 やさしく説明",
-    prompt1: "私が知らなそうな面白い豆知識を教えて",
-    prompt2: "友情についての短くて優しい詩を書いて",
-    prompt3: "のんびりした日曜日の過ごし方を考えて",
-    prompt4: "インターネットの仕組みをやさしく簡単に説明して",
-    newChat: "新しいチャット",
-    recent: "最近のチャット",
-    footer: "愛を込めて作りました",
-    placeholder: "ジュリアAIにメッセージを送る...",
-    disclaimer: "ジュリアAIも間違えることがあります。重要な情報は確認してね。",
-    newChatTitle: "新しいチャット",
-    errorMsg: "あっ、うまくいかなかったよ！サーバーに問題が発生しました。少し待ってからもう一度お試しください。",
-    imageErrorMsg: "あっ、今回はうまく描けなかったよ！少し待ってからもう一度お試しください。",
-    languageName: "日本語",
-    noChatsYet: "この言語のチャットはまだありません",
-    deleteChat: "チャットを削除",
-    copyMessage: "コピー",
-    copiedMessage: "コピーしました！",
-    readAloud: "読み上げ", stopReading: "停止", goodResponse: "良い回答", badResponse: "悪い回答", retryMessage: "やり直す",
-    notConfiguredMsg: "まだジュリアAIの頭脳が接続されていないよ！ サイトの管理者がバックエンド（Mimi worker.js）を設定する必要があるの。",
-    generatingImage: "画像を描いています..."
-  },
-  es: {
-    modelPill: "Julia AI · tu amiga gatita",
-    heroTitle: "Hola, soy Julia AI",
-    heroSubtitle: "Pregúntame lo que quieras, te escucho con todo mi corazón.",
-    chip1: "Dato curioso", chip2: "💌 Escribe un poema", chip3: "📋 Planea mi día", chip4: "💡 Explica algo simple",
-    prompt1: "Cuéntame un dato curioso que probablemente no conozca",
-    prompt2: "Escríbeme un poema corto y dulce sobre la amistad",
-    prompt3: "Ayúdame a planear un domingo tranquilo y acogedor",
-    prompt4: "Explica algo complicado de forma simple y amigable: ¿cómo funciona internet?",
-    newChat: "Nuevo chat",
-    recent: "Recientes",
-    footer: "Hecho con cariño para ti",
-    placeholder: "Escríbele a Julia AI...",
-    disclaimer: "Julia AI puede cometer errores. Verifica la información importante.",
-    newChatTitle: "Nuevo chat",
-    errorMsg: "¡Ups, algo salió mal! Hubo un problema con el servidor. Intenta de nuevo en un momento.",
-    imageErrorMsg: "¡Ups, no pude dibujar eso esta vez! Intenta de nuevo en un momento.",
-    languageName: "Español",
-    noChatsYet: "Aún no hay chats en este idioma",
-    deleteChat: "Eliminar chat",
-    copyMessage: "Copiar",
-    copiedMessage: "¡Copiado!",
-    readAloud: "Leer en voz alta", stopReading: "Detener", goodResponse: "Buena respuesta", badResponse: "Mala respuesta", retryMessage: "Reintentar",
-    notConfiguredMsg: "¡Julia AI todavía no está conectada a un cerebro! El dueño del sitio debe configurar el backend (ver Mimi worker.js) antes de que pueda chatear de verdad.",
-    generatingImage: "Dibujando tu imagen..."
-  },
-  ko: {
-    modelPill: "줄리아 AI · 나의 고양이 친구",
-    heroTitle: "안녕, 나는 줄리아 AI야",
-    heroSubtitle: "무엇이든 물어봐, 귀를 쫑긋 세우고 듣고 있을게.",
-    chip1: "재미있는 사실", chip2: "💌 시 써주기", chip3: "📋 하루 계획", chip4: "💡 쉽게 설명하기",
-    prompt1: "내가 잘 모를 것 같은 재미있는 사실 하나 알려줘",
-    prompt2: "우정에 대한 짧고 따뜻한 시를 써줘",
-    prompt3: "편안한 일요일을 계획하는 걸 도와줘",
-    prompt4: "인터넷이 어떻게 작동하는지 쉽고 친근하게 설명해줘",
-    newChat: "새 채팅",
-    recent: "최근 채팅",
-    footer: "마음을 담아 만들었어요",
-    placeholder: "줄리아 AI에게 메시지 보내기...",
-    disclaimer: "줄리아 AI도 실수를 할 수 있어요. 중요한 정보는 다시 확인하세요.",
-    newChatTitle: "새 채팅",
-    errorMsg: "앗, 문제가 생겼어! 서버에 문제가 생겼어요. 잠시 후 다시 시도해주세요.",
-    imageErrorMsg: "앗, 이번엔 그리지 못했어! 잠시 후 다시 시도해주세요.",
-    languageName: "한국어",
-    noChatsYet: "이 언어로 된 채팅이 아직 없어요",
-    deleteChat: "채팅 삭제",
-    copyMessage: "복사",
-    copiedMessage: "복사됨!",
-    readAloud: "소리 내어 읽기", stopReading: "중지", goodResponse: "좋은 답변", badResponse: "나쁜 답변", retryMessage: "다시 시도",
-    notConfiguredMsg: "줄리아 AI가 아직 두뇌에 연결되지 않았어요! 사이트 관리자가 백엔드(Mimi worker.js 참고)를 먼저 설정해야 진짜로 대화할 수 있어요.",
-    generatingImage: "이미지를 그리는 중..."
   }
 };
 
@@ -176,21 +72,6 @@ function applyLanguage(){
     chip.textContent = t(key);
   });
 }
-
-document.getElementById('langSelect').addEventListener('change', (e) => {
-  currentLang = e.target.value;
-  applyLanguage();
-  // Each language keeps its own separate list of conversations.
-  const existing = conversations.find(c => c.lang === currentLang);
-  if(existing){
-    currentId = existing.id;
-    renderHistory();
-    renderChat();
-  } else {
-    newConversation();
-  }
-  saveState();
-});
 
 const chatScroll = document.getElementById('chatScroll');
 const chatInner = document.getElementById('chatInner');
@@ -231,7 +112,8 @@ function loadState(){
     const data = JSON.parse(raw);
     if(!data || !Array.isArray(data.conversations) || data.conversations.length === 0) return false;
     conversations = data.conversations;
-    currentLang = data.currentLang || 'en';
+    currentLang = 'en';
+    conversations.forEach(c => { c.lang = 'en'; });
     currentId = data.currentId;
     if(!conversations.find(c => c.id === currentId)){
       const firstInLang = conversations.find(c => c.lang === currentLang);
@@ -397,8 +279,40 @@ const ICON_LIKE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 const ICON_DISLIKE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15v4a3 3 0 003 3l4-9V2H5.72a2 2 0 00-2 1.7l-1.38 9a2 2 0 002 2.3H10z"/><path d="M17 2h2.67A2.31 2.31 0 0122 4v7a2.31 2.31 0 01-2.33 2H17"/></svg>';
 const ICON_RETRY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>';
 
-const SPEECH_LANG = { en:'en-US', fil:'fil-PH', ja:'ja-JP', es:'es-ES', ko:'ko-KR' };
+const SPEECH_LANG = { en:'en-US' };
 let speakingBtn = null;
+
+// Browsers don't say which voices are female, so we rank installed voices by name:
+// known female names score up, known male names score down.
+const FEMALE_VOICE_RE = /zira|aria|jenny|michelle|emma|ava\b|sonia|libby|natasha|clara|samantha|karen|victoria|allison|susan|serena|moira|tessa|fiona|kate|heather|nicky|joanna|salli|ivy|kendra|kimberly|female|woman|blessica|rosa|elvira|dalia|helena|paulina|monica|sabina|laura|paloma|marisol|elena|lucia|kyoko|nanami|haruka|ayumi|mayu|sayaka|o-ren|yuna|sunhi|sun-hi|seoyeon|google us english|google \u65e5\u672c\u8a9e|google espa\u00f1ol|google \ud55c\uad6d\uc758/i;
+const MALE_VOICE_RE = /\bmale\b|\bman\b|david|mark\b|guy\b|ryan|james|george|richard|daniel|alex\b|fred\b|tom\b|thomas|eric|christopher|roger|steffan|brian|davis|angelo|jorge|pablo|raul|diego|enrique|ichiro|keita|takumi|naoki|hyunsu|injoon|hemant|rishi/i;
+
+function voiceLangMatches(voice, langKey){
+  const l = (voice.lang || '').toLowerCase().replace('_', '-');
+  return l.startsWith(langKey);
+}
+function pickFemaleVoice(langKey){
+  if(!('speechSynthesis' in window)) return null;
+  const voices = window.speechSynthesis.getVoices() || [];
+  const candidates = voices.filter(v => voiceLangMatches(v, langKey));
+  if(candidates.length === 0) return null;
+  const wanted = (SPEECH_LANG[langKey] || '').toLowerCase();
+  let best = null, bestScore = -Infinity;
+  candidates.forEach(v => {
+    let score = 0;
+    if(FEMALE_VOICE_RE.test(v.name)) score += 10;
+    if(MALE_VOICE_RE.test(v.name)) score -= 10;
+    if(/natural|online/i.test(v.name)) score += 3;
+    if((v.lang || '').toLowerCase().replace('_', '-') === wanted) score += 2;
+    if(score > bestScore){ best = v; bestScore = score; }
+  });
+  return best;
+}
+// Some browsers load their voice list a moment after the page opens.
+if('speechSynthesis' in window){
+  window.speechSynthesis.getVoices();
+  window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+}
 
 function makeToolBtn(className, label, iconHtml){
   const b = document.createElement('button');
@@ -439,13 +353,17 @@ function toggleSpeak(text, btn){
   stopSpeaking();
   const chunks = splitForSpeech(text);
   if(chunks.length === 0) return;
+  const voice = pickFemaleVoice(currentLang);
   speakingBtn = btn;
   btn.classList.add('active');
   btn.innerHTML = ICON_STOP;
   btn.title = t('stopReading');
   chunks.forEach((chunk, i) => {
     const u = new SpeechSynthesisUtterance(chunk);
-    u.lang = SPEECH_LANG[currentLang] || 'en-US';
+    if(voice){ u.voice = voice; u.lang = voice.lang; }
+    else { u.lang = SPEECH_LANG[currentLang] || 'en-US'; }
+    const onlyMaleVoice = !voice || (MALE_VOICE_RE.test(voice.name) && !FEMALE_VOICE_RE.test(voice.name));
+    u.pitch = onlyMaleVoice ? 1.35 : 1.1;
     if(i === chunks.length - 1){
       u.onend = () => { if(speakingBtn === btn) resetSpeakBtn(); };
       u.onerror = () => { if(speakingBtn === btn) resetSpeakBtn(); };
@@ -1002,7 +920,6 @@ async function getImageResponse(conv, prompt, existingTypingMsg){
 
 // init
 const loaded = loadState();
-document.getElementById('langSelect').value = currentLang;
 applyLanguage();
 if(loaded){
   renderHistory();
