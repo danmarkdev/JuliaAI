@@ -7,7 +7,7 @@ A Hello Kitty-themed AI companion that chats naturally, generates images from yo
 ## ✨ Features
 
 - **Natural conversation** - friendly, warm replies with no character gimmicks
-- **Image generation** - describe a picture and Julia draws it for you
+- **Image generation** - describe a picture and draws it for you
 - **File & link understanding** - attach images, PDFs, or plain text files, or paste a link, and Julia reads it
 - **Smart formatting** - replies render as step-by-step lists, tables, bold text, links, and copy-ready code blocks depending on what you asked
 - **Read aloud** - replies can be read back out loud
