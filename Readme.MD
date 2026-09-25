@@ -1,4 +1,4 @@
-# Julia AI 🎀
+# 🎀 Julia AI 🎀
 
 A Hello Kitty-themed AI companion that chats naturally, generates images from your ideas, and reads photos, PDFs and shared links.
 
@@ -13,17 +13,6 @@ A Hello Kitty-themed AI companion that chats naturally, generates images from yo
 - **Read aloud** - replies can be read back out loud
 - **Chat history** - rename, delete, edit, and retry any message
 - **Drag-and-drop / paste attachments** - drop a file anywhere on the page or paste a screenshot directly into the message box
-
-
-## 📌 Roadmap ideas
-
-- [ ] Voice input
-- [ ] Theming presets beyond the Hello Kitty look
-- [ ] Export chat history
-
-## 📄 License
-
-This project is for personal/portfolio use. Feel free to explore the code, but please don't redistribute it as your own without credit.
 
 ---
 
