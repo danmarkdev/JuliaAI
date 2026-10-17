@@ -1,9 +1,39 @@
-/* Julia AI extras. Loads AFTER script.js.
+/* Julia AI extras (v11). Loads AFTER script.js.
    1) Formats replies (lists, code blocks, tables, bold, links)
    2) Tells Julia which format to use for each kind of request
    3) Syncs chats between devices with a private sync code */
 (function(){
 'use strict';
+
+const EXTRAS_VERSION = 'v11';
+
+/* ---------- Copy helper that also works on non-HTTPS pages ---------- */
+function copyText(txt){
+  return new Promise((resolve, reject) => {
+    const legacy = () => {
+      try{
+        const ta = document.createElement('textarea');
+        ta.value = txt;
+        ta.setAttribute('readonly', '');
+        ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;font-size:16px';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        ta.setSelectionRange(0, txt.length);
+        const ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        ok ? resolve() : reject(new Error('copy blocked'));
+      }catch(e){ reject(e); }
+    };
+    try{
+      if(navigator.clipboard && window.isSecureContext){
+        navigator.clipboard.writeText(txt).then(resolve, legacy);
+        return;
+      }
+    }catch(e){}
+    legacy();
+  });
+}
 
 /* ---------- 1. Markdown rendering ---------- */
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -99,10 +129,10 @@ document.addEventListener('click', e => {
   const b = e.target.closest && e.target.closest('.code-copy');
   if(!b) return;
   const txt = b.closest('.code-block').querySelector('code').textContent;
-  navigator.clipboard.writeText(txt).then(() => {
+  copyText(txt).then(() => {
     b.textContent = 'Copied!';
     setTimeout(() => { b.textContent = 'Copy'; }, 1400);
-  });
+  }, () => {});
 });
 
 /* ---------- 2. Format rules for Julia ---------- */
@@ -124,9 +154,13 @@ buildSystemPrompt = function(){
 /* ---------- 3. Cross-device sync ---------- */
 const LS_CODE = 'juliaSyncCode', LS_DEL = 'juliaSyncDeleted';
 const ALPHA = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const POLL_MS = 10000;      // check for changes from other devices every 10 seconds
+const TIMEOUT_MS = 20000;   // never let a stuck request block syncing forever
+
+const makeCode = () => Array.from(crypto.getRandomValues(new Uint8Array(20)), b => ALPHA[b % 32]).join('');
 let code = localStorage.getItem(LS_CODE) || '';
 if(!code){
-  code = Array.from(crypto.getRandomValues(new Uint8Array(20)), b => ALPHA[b % 32]).join('');
+  code = makeCode();
   localStorage.setItem(LS_CODE, code);
 }
 const fmt = c => c.match(/.{1,4}/g).join('-');
@@ -136,7 +170,7 @@ const saveTomb = () => localStorage.setItem(LS_DEL, JSON.stringify(tomb));
 
 const sig = c => JSON.stringify([c.title, c.messages.map(m => [m.role, m.content, m.feedback || 0, (m.attachments || []).length])]);
 const sigs = new Map();
-let dirty = false, busy = false, timer = null;
+let dirty = false, busy = false, queued = false, timer = null, workerOld = false;
 
 function stampAll(mark){
   conversations.forEach(c => {
@@ -147,7 +181,7 @@ function stampAll(mark){
 }
 
 const rawSave = saveState;
-saveState = function(){ stampAll(true); rawSave(); dirty = true; clearTimeout(timer); timer = setTimeout(syncNow, 1500); };
+saveState = function(){ stampAll(true); rawSave(); dirty = true; clearTimeout(timer); timer = setTimeout(syncNow, 1200); };
 
 const rawDelete = deleteConversation;
 deleteConversation = function(id){ tomb[id] = Date.now(); saveTomb(); sigs.delete(id); rawDelete(id); };
@@ -206,28 +240,67 @@ function merge(r){
 
 function setStatus(t){ const e = document.getElementById('syncStatus'); if(e) e.textContent = t; }
 
-async function syncNow(){
-  if(busy || !code || document.getElementById('typingMsg')) return;
+// One network call with a hard time limit, so a hung request on mobile can never freeze syncing.
+async function call(path, opts){
+  const ctl = new AbortController();
+  const to = setTimeout(() => ctl.abort(), TIMEOUT_MS);
+  try{
+    const r = await fetch(API_ENDPOINT + path, { ...opts, cache: 'no-store', signal: ctl.signal });
+    let data = null;
+    try{ data = await r.json(); }catch(e){}
+    return { ok: r.ok, status: r.status, data };
+  }finally{ clearTimeout(to); }
+}
+
+const localCount = () => conversations.filter(c => c.messages.length).length;
+
+async function syncNow(manual){
+  if(!code) return;
+  if(busy){ queued = true; return; }
+  if(document.getElementById('typingMsg')){
+    dirty = true;
+    if(manual === true) setStatus('Julia is still replying. Syncing right after.');
+    return;
+  }
   busy = true;
   const was = dirty; dirty = false;
-  const head = { 'X-Sync-Key': code };
+  const usedCode = code;
+  const head = { 'X-Sync-Key': usedCode };
   try{
-    const g = await fetch(API_ENDPOINT + '/sync', { headers: head });
-    if(!g.ok) throw new Error('GET ' + g.status);
-    const remote = await g.json();
-    if(document.getElementById('typingMsg')){ dirty = true; return; }
-    const push = merge(remote) || was;
+    const g = await call('/sync', { headers: head });
+    if(!g.ok || !g.data) throw new Error('GET ' + g.status);
+    if(usedCode !== code || document.getElementById('typingMsg')){ dirty = true; return; }
+
+    let serverCount = (g.data.conversations || []).length;
+    const push = merge(g.data) || was;
+
     if(push){
       const body = JSON.stringify({ conversations: conversations.filter(c => c.messages.length).map(strip), deleted: tomb });
-      const p = await fetch(API_ENDPOINT + '/sync', { method: 'PUT', headers: { ...head, 'Content-Type': 'application/json' }, body });
+      const p = await call('/sync', { method: 'PUT', headers: { ...head, 'Content-Type': 'application/json' }, body });
       if(!p.ok) throw new Error('PUT ' + p.status);
+      // The worker answers with the combined chats from all devices; apply them right away.
+      if(p.data && Array.isArray(p.data.conversations)){
+        workerOld = false;
+        serverCount = p.data.conversations.length;
+        if(usedCode === code && !document.getElementById('typingMsg')) merge(p.data);
+      }else{
+        workerOld = true;   // an old worker only answers {ok:true} and overwrites the saved chats
+      }
     }
-    setStatus('Synced at ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    if(workerOld){
+      setStatus('PROBLEM: your Cloudflare worker is the OLD version, so devices overwrite each other. In Cloudflare > julia-ai-chat-proxy > Edit code, paste the newest Mimi worker.js and click Deploy.');
+    }else{
+      setStatus('Synced at ' + time + '. This device: ' + localCount() + ' chats. Server: ' + serverCount + ' chats.');
+    }
   }catch(e){
     console.error('Sync failed', e);
-    dirty = dirty || was;
-    setStatus('Could not sync right now. It will retry.');
-  }finally{ busy = false; }
+    dirty = true;
+    setStatus('Could not sync (' + (e.name === 'AbortError' ? 'timed out' : e.message) + '). Retrying...');
+  }finally{
+    busy = false;
+    if(queued){ queued = false; setTimeout(syncNow, 300); }
+  }
 }
 
 /* ---------- Sync UI ---------- */
@@ -270,6 +343,10 @@ const css = `
 .sync-card button{font-family:'Nunito',sans-serif;font-weight:700;font-size:13.5px;border-radius:999px;padding:9px 16px;cursor:pointer;border:1.5px solid var(--bow);background:var(--bow);color:#fff}
 .sync-card button:hover{background:var(--bow-dark)}
 .sync-card .sync-close{background:#fff;color:var(--bow);width:100%}
+.sync-card .sync-close:hover,.sync-card .sync-close:active,.sync-card .sync-close:focus-visible{background:var(--bow);color:#fff}
+.sync-row.two button{flex:1 1 0;min-width:0;white-space:nowrap}
+.sync-card .sync-alt{background:#fff;color:var(--bow)}
+.sync-card .sync-alt:hover,.sync-card .sync-alt:active{background:var(--pink-50);color:var(--bow-dark)}
 .sync-status{font-size:12.5px;color:var(--ink-soft);min-height:18px;margin-bottom:8px}
 .sync-card .sync-note{font-size:12.5px;color:var(--ink-soft)}
 `;
@@ -289,23 +366,35 @@ modal.innerHTML =
   '<div class="sync-card"><h3>Sync your chats</h3>' +
   '<p>Chats sync between devices that use the same code. On your other device, tap <b>Sync devices</b> and enter this code.</p>' +
   '<div class="sync-code" id="syncCode"></div>' +
-  '<div class="sync-row"><button type="button" id="syncCopy">Copy code</button></div>' +
+  '<div class="sync-row two"><button type="button" id="syncCopy">Copy code</button><button type="button" class="sync-alt" id="syncNew">New code</button></div>' +
   '<p>Got a code from another device? Enter it here. Chats on this device will be combined with that code\'s chats.</p>' +
-  '<div class="sync-row"><input id="syncInput" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX" autocomplete="off" spellcheck="false"><button type="button" id="syncLink">Use code</button></div>' +
+  '<div class="sync-row"><input id="syncInput" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false"><button type="button" id="syncLink">Use code</button></div>' +
   '<div class="sync-status" id="syncStatus"></div>' +
-  '<p class="sync-note">Keep this code private, anyone with it can read your chats. Only text syncs; photos and files stay on the device that sent them.</p>' +
+  '<p class="sync-note">Keep this code private, anyone with it can read your chats. Only text syncs; photos and files stay on the device that sent them. It can take up to a minute for a new chat to show on the other device. Version ' + EXTRAS_VERSION + '.</p>' +
   '<button type="button" class="sync-close" id="syncClose">Close</button></div>';
 document.body.appendChild(modal);
 
 const codeEl = document.getElementById('syncCode');
-const showModal = () => { codeEl.textContent = fmt(code); modal.classList.add('show'); syncNow(); };
+const showModal = () => { codeEl.textContent = fmt(code); modal.classList.add('show'); setStatus('Syncing...'); syncNow(true); };
 const hideModal = () => modal.classList.remove('show');
 openBtn.addEventListener('click', () => { closeSidebarMobile(); showModal(); });
 document.getElementById('syncClose').addEventListener('click', hideModal);
 modal.addEventListener('click', e => { if(e.target === modal) hideModal(); });
 document.addEventListener('keydown', e => { if(e.key === 'Escape') hideModal(); });
 document.getElementById('syncCopy').addEventListener('click', () => {
-  navigator.clipboard.writeText(fmt(code)).then(() => setStatus('Code copied.'));
+  copyText(fmt(code)).then(
+    () => setStatus('Code copied: ' + fmt(code)),
+    () => setStatus('Copy is blocked here. Press and hold the code above, select it, and copy it by hand.')
+  );
+});
+document.getElementById('syncNew').addEventListener('click', () => {
+  if(!window.confirm('Make a brand new code? Your other devices will stop syncing with this one until you enter the new code on them.')) return;
+  code = makeCode();
+  localStorage.setItem(LS_CODE, code);
+  codeEl.textContent = fmt(code);
+  dirty = true;
+  setStatus('New code ready: ' + fmt(code));
+  syncNow(true);
 });
 document.getElementById('syncLink').addEventListener('click', () => {
   const v = document.getElementById('syncInput').value.toUpperCase().replace(/[^A-Z0-9]/g, '');
@@ -316,7 +405,7 @@ document.getElementById('syncLink').addEventListener('click', () => {
   document.getElementById('syncInput').value = '';
   dirty = true;
   setStatus('Linking...');
-  syncNow();
+  syncNow(true);
 });
 
 /* ---------- Start ---------- */
@@ -324,7 +413,9 @@ stampAll(false);
 rawSave();
 renderChat(); // re-draw existing replies with formatting
 syncNow();
-setInterval(() => { if(!document.hidden) syncNow(); }, 20000);
+setInterval(() => { if(!document.hidden) syncNow(); }, POLL_MS);
 document.addEventListener('visibilitychange', () => { if(!document.hidden) syncNow(); });
-window.addEventListener('focus', syncNow);
+window.addEventListener('focus', () => syncNow());
+window.addEventListener('online', () => syncNow());
+window.addEventListener('pageshow', () => syncNow());
 })();
