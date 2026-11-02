@@ -1,5 +1,2 @@
-# Keep the Cloudflare Worker source out of the public GitHub repo.
-# (It does a secret -informations-
-# this keeps also the backend logic itself private.)
 Mimi worker.js
 worker.js
