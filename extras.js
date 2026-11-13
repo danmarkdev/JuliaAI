@@ -1,13 +1,9 @@
-/* Julia AI extras (v11). Loads AFTER script.js.
-   1) Formats replies (lists, code blocks, tables, bold, links)
-   2) Tells Julia which format to use for each kind of request
-   3) Syncs chats between devices with a private sync code */
 (function(){
 'use strict';
 
-const EXTRAS_VERSION = 'v11';
+const EXTRAS_VERSION = 'v15';
 
-/* ---------- Copy helper that also works on non-HTTPS pages ---------- */
+/* CopyHelper (Https) */
 function copyText(txt){
   return new Promise((resolve, reject) => {
     const legacy = () => {
@@ -15,7 +11,7 @@ function copyText(txt){
         const ta = document.createElement('textarea');
         ta.value = txt;
         ta.setAttribute('readonly', '');
-        ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;font-size:16px';
+        ta.className = 'copy-helper';
         document.body.appendChild(ta);
         ta.focus();
         ta.select();
@@ -35,7 +31,7 @@ function copyText(txt){
   });
 }
 
-/* ---------- 1. Markdown rendering ---------- */
+/* Markdown Rendering */
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 const NUL = '\u0000';
 const LI = /^(\s*)([-*\u2022]|\d+[.)])\s+(.*)$/;
@@ -101,7 +97,7 @@ function md(src){
       let items = '';
       while(i < L.length && (m = L[i].match(LI))){
         const depth = Math.min(Math.floor(m[1].replace(/\t/g, '  ').length / 2), 4);
-        items += '<li style="margin-left:' + (depth * 18) + 'px">' + inline(m[3]) + '</li>';
+        items += '<li' + (depth ? ' class="d' + depth + '"' : '') + '>' + inline(m[3]) + '</li>';
         i++;
       }
       o += (ord ? '<ol start="' + start + '">' : '<ul>') + items + (ord ? '</ol>' : '</ul>');
@@ -114,7 +110,7 @@ function md(src){
   return o;
 }
 
-// AI bubbles render as formatted HTML; user bubbles stay plain text.
+// AI bubbles render as formatted HTML
 const baseAppend = appendBubble;
 appendBubble = function(role, text){
   const bubble = baseAppend.apply(null, arguments);
@@ -122,6 +118,9 @@ appendBubble = function(role, text){
     const span = bubble.lastElementChild;
     if(span && span.tagName === 'SPAN'){ span.innerHTML = md(text); bubble.classList.add('md'); }
   }
+ 
+  const att = arguments[3];
+  if(!text && att && att.length && bubble.querySelector('.file-card')) bubble.classList.add('file-only');
   return bubble;
 };
 
@@ -135,8 +134,8 @@ document.addEventListener('click', e => {
   }, () => {});
 });
 
-/* ---------- 2. Format rules for Julia ---------- */
-const baseSystemPrompt = buildSystemPrompt;
+/* format rules */
+const baseSystemPrompt = buildSystPrompt;
 buildSystemPrompt = function(){
   return baseSystemPrompt() +
     "\n\nFORMATTING: your replies are shown as markdown, so match the format to what the person needs. " +
@@ -151,11 +150,11 @@ buildSystemPrompt = function(){
     "Use headings (##) only for long, multi-part answers. Never wrap a whole reply in a code block.";
 };
 
-/* ---------- 3. Cross-device sync ---------- */
+/* Cross Device Sync */
 const LS_CODE = 'juliaSyncCode', LS_DEL = 'juliaSyncDeleted';
 const ALPHA = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-const POLL_MS = 10000;      // check for changes from other devices every 10 seconds
-const TIMEOUT_MS = 20000;   // never let a stuck request block syncing forever
+const POLL_MS = 10000;      
+const TIMEOUT_MS = 20000;   
 
 const makeCode = () => Array.from(crypto.getRandomValues(new Uint8Array(20)), b => ALPHA[b % 32]).join('');
 let code = localStorage.getItem(LS_CODE) || '';
@@ -186,7 +185,7 @@ saveState = function(){ stampAll(true); rawSave(); dirty = true; clearTimeout(ti
 const rawDelete = deleteConversation;
 deleteConversation = function(id){ tomb[id] = Date.now(); saveTomb(); sigs.delete(id); rawDelete(id); };
 
-// Photos and files stay on the device that sent them; only text syncs.
+// Photos and files syncs both devices
 const strip = c => ({ ...c, messages: c.messages.map(m => (m.attachments && m.attachments.length)
   ? { ...m, attachments: m.attachments.map(a => ({ name: (a.name || 'Image') + ' (on other device)', mimeType: 'omitted', omitted: 1 })) }
   : m) });
@@ -278,13 +277,13 @@ async function syncNow(manual){
       const body = JSON.stringify({ conversations: conversations.filter(c => c.messages.length).map(strip), deleted: tomb });
       const p = await call('/sync', { method: 'PUT', headers: { ...head, 'Content-Type': 'application/json' }, body });
       if(!p.ok) throw new Error('PUT ' + p.status);
-      // The worker answers with the combined chats from all devices; apply them right away.
+      
       if(p.data && Array.isArray(p.data.conversations)){
         workerOld = false;
         serverCount = p.data.conversations.length;
         if(usedCode === code && !document.getElementById('typingMsg')) merge(p.data);
       }else{
-        workerOld = true;   // an old worker only answers {ok:true} and overwrites the saved chats
+        workerOld = true;   // saved chats
       }
     }
     const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -303,57 +302,7 @@ async function syncNow(manual){
   }
 }
 
-/* ---------- Sync UI ---------- */
-const css = `
-.bubble.md{white-space:normal;min-width:0;max-width:100%;overflow:hidden}
-.msg-col{min-width:0}
-.bubble.md>span{display:block}
-.bubble.md>span>*:first-child{margin-top:0}
-.bubble.md>span>*:last-child{margin-bottom:0}
-.bubble.md p{margin:0 0 10px}
-.bubble.md h3,.bubble.md h4,.bubble.md h5,.bubble.md h6{font-family:'Baloo 2',sans-serif;margin:14px 0 6px;line-height:1.3;color:var(--bow)}
-.bubble.md h3{font-size:18px}.bubble.md h4{font-size:16.5px}.bubble.md h5,.bubble.md h6{font-size:15px}
-.bubble.md ul,.bubble.md ol{margin:0 0 10px;padding-left:22px}
-.bubble.md li{margin:3px 0}
-.bubble.md blockquote{margin:0 0 10px;padding:6px 12px;border-left:3px solid var(--pink-200);background:var(--pink-50);border-radius:0 10px 10px 0;color:var(--ink-soft)}
-.bubble.md hr{border:none;border-top:1px solid var(--pink-200);margin:12px 0}
-.bubble.md a{color:var(--bow);font-weight:700}
-.bubble.md code{font-family:Consolas,Menlo,monospace;font-size:13px;background:var(--pink-50);border:1px solid var(--pink-100);padding:1px 5px;border-radius:6px}
-.code-block{margin:6px 0 12px;border-radius:12px;overflow:hidden;background:#2b1a22;color:#ffe9f4}
-.code-head{display:flex;justify-content:space-between;align-items:center;padding:6px 12px;background:#3d2331;font-size:12px;color:#ffadd3}
-.code-copy{font-family:'Nunito',sans-serif;font-weight:700;font-size:12px;background:var(--bow);color:#fff;border:none;border-radius:999px;padding:4px 12px;cursor:pointer}
-.bubble.md .code-block pre{margin:0;padding:12px;overflow-x:auto;white-space:pre;font-size:13px;line-height:1.5}
-.bubble.md .code-block code{background:none;border:none;padding:0;color:inherit}
-.md-table{overflow-x:auto;margin:6px 0 12px}
-.md-table table{border-collapse:collapse;font-size:14px;min-width:100%}
-.md-table th,.md-table td{border:1px solid var(--pink-200);padding:6px 10px;text-align:left}
-.md-table th{background:var(--pink-50);color:var(--bow)}
-.history{scrollbar-width:none;-ms-overflow-style:none}
-.history::-webkit-scrollbar{display:none;width:0;height:0}
-.sync-btn{width:100%;justify-content:center}
-.sync-modal{display:none;position:fixed;inset:0;background:rgba(43,26,34,.45);z-index:50;align-items:center;justify-content:center;padding:16px}
-.sync-modal.show{display:flex}
-.sync-card{background:#fff;border-radius:20px;padding:22px;max-width:420px;width:100%;box-shadow:var(--shadow);max-height:90vh;overflow-y:auto}
-.sync-card h3{font-family:'Baloo 2',sans-serif;margin:0 0 8px;color:var(--bow);font-size:22px}
-.sync-card p{font-size:14px;line-height:1.5;margin:0 0 12px}
-.sync-code{font-family:Consolas,Menlo,monospace;font-weight:700;font-size:15px;letter-spacing:1px;text-align:center;background:var(--pink-50);border:1.5px dashed var(--bow);border-radius:12px;padding:12px 8px;margin-bottom:10px;color:var(--bow);word-break:break-all;user-select:all}
-.sync-row{display:flex;gap:8px;margin-bottom:12px}
-.sync-row input{flex:1;min-width:0;font-family:'Nunito',sans-serif;font-size:14px;border:1.5px solid var(--pink-200);border-radius:12px;padding:9px 12px;outline:none;text-transform:uppercase}
-.sync-row input:focus{border-color:var(--bow)}
-.sync-card button{font-family:'Nunito',sans-serif;font-weight:700;font-size:13.5px;border-radius:999px;padding:9px 16px;cursor:pointer;border:1.5px solid var(--bow);background:var(--bow);color:#fff}
-.sync-card button:hover{background:var(--bow-dark)}
-.sync-card .sync-close{background:#fff;color:var(--bow);width:100%}
-.sync-card .sync-close:hover,.sync-card .sync-close:active,.sync-card .sync-close:focus-visible{background:var(--bow);color:#fff}
-.sync-row.two button{flex:1 1 0;min-width:0;white-space:nowrap}
-.sync-card .sync-alt{background:#fff;color:var(--bow)}
-.sync-card .sync-alt:hover,.sync-card .sync-alt:active{background:var(--pink-50);color:var(--bow-dark)}
-.sync-status{font-size:12.5px;color:var(--ink-soft);min-height:18px;margin-bottom:8px}
-.sync-card .sync-note{font-size:12.5px;color:var(--ink-soft)}
-`;
-const styleEl = document.createElement('style');
-styleEl.textContent = css;
-document.head.appendChild(styleEl);
-
+/* Sync UI */
 const openBtn = document.createElement('button');
 openBtn.type = 'button';
 openBtn.className = 'new-chat-btn sync-btn';
@@ -370,7 +319,7 @@ modal.innerHTML =
   '<p>Got a code from another device? Enter it here. Chats on this device will be combined with that code\'s chats.</p>' +
   '<div class="sync-row"><input id="syncInput" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false"><button type="button" id="syncLink">Use code</button></div>' +
   '<div class="sync-status" id="syncStatus"></div>' +
-  '<p class="sync-note">Keep this code private, anyone with it can read your chats. Only text syncs; photos and files stay on the device that sent them. It can take up to a minute for a new chat to show on the other device. Version ' + EXTRAS_VERSION + '.</p>' +
+  '<p class="sync-note">Keep this code private, anyone with it can read your chats. Only text syncs; photos and files stay on the device that sent them. It can take up to a minute for a new chat to show on the other device.</p>' +
   '<button type="button" class="sync-close" id="syncClose">Close</button></div>';
 document.body.appendChild(modal);
 
@@ -408,10 +357,167 @@ document.getElementById('syncLink').addEventListener('click', () => {
   syncNow(true);
 });
 
-/* ---------- Start ---------- */
+
+try{
+   
+i18n.en.placeholder = 'Ask Julia AI...';
+input.placeholder = i18n.en.placeholder;
+
+// File cards
+const FILE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>';
+function fileParts(a){
+  const full = String(a.name || 'file').replace(/\s*\(on other device\)\s*$/i, '');
+  const m = full.match(/^(.+)\.([A-Za-z0-9]{1,5})$/);
+  let base = full, ext = '';
+  if(m){ base = m[1]; ext = m[2].toUpperCase(); }
+  else if(a.mimeType === 'application/pdf') ext = 'PDF';
+  else if(a.mimeType === 'text/plain') ext = 'TXT';
+  return { full, base, ext: ext || 'FILE' };
+}
+function fileCard(a){
+  const p = fileParts(a);
+  const card = document.createElement('div');
+  card.className = 'file-card';
+  card.title = p.full;
+  const ico = document.createElement('div');
+  ico.className = 'file-ico';
+  ico.innerHTML = FILE_ICON;
+  const label = document.createElement('span');
+  label.textContent = p.ext;
+  ico.appendChild(label);
+  const title = document.createElement('div');
+  title.className = 'file-title';
+  title.textContent = p.base;
+  card.appendChild(ico);
+  card.appendChild(title);
+  return card;
+}
+const baseGrid = attachmentsToHtmlGrid;
+attachmentsToHtmlGrid = function(attachments){
+  const grid = baseGrid(attachments);
+  if(!grid) return grid;
+  const files = attachments.filter(a => a.mimeType && !a.mimeType.startsWith('image/'));
+  Array.from(grid.querySelectorAll('.file-badge')).forEach((badge, i) => {
+    if(files[i]) badge.replaceWith(fileCard(files[i]));
+  });
+  return grid;
+};
+
+// Daily Motivation Quotes
+const QUOTES = [
+  "Small steps still move you forward.",
+  "Be proud of how far you have come, not only how far you have to go.",
+  "Rest is part of the plan, not a break from it.",
+  "You are allowed to learn at your own pace.",
+  "One focused hour beats five distracted ones.",
+  "Mistakes are just proof that you are trying.",
+  "Start with what you have, right where you are.",
+  "A messy first draft is better than a perfect empty page.",
+  "You do not need to be perfect to be amazing.",
+  "Today's effort is tomorrow's confidence.",
+  "Breathe in, breathe out, then begin again.",
+  "Your future self is cheering for you right now.",
+  "Hard things get easier the more you show up for them.",
+  "Drink some water, stretch a little, and keep going.",
+  "Progress is quiet, but it adds up.",
+  "It is okay to ask for help. That is how everyone learns.",
+  "Every expert was once a beginner who kept going.",
+  "Be kind to yourself on the days that feel heavy.",
+  "You have already made it through every hard day so far.",
+  "Curiosity is a superpower. Keep asking questions.",
+  "Done is better than perfect, and learning beats both.",
+  "Take it one page, one problem, one breath at a time.",
+  "Believe in the version of you that keeps trying.",
+  "Bad days do not erase your progress.",
+  "You are building something good, even when it feels slow.",
+  "Choose progress over pressure today.",
+  "Your pace is valid. Keep walking.",
+  "Make today a little brighter than yesterday.",
+  "Courage is trying again after a tough day.",
+  "Little by little, it becomes a lot.",
+  "You are more capable than you think.",
+  "Focus on what you can do right now.",
+  "Celebrate the small wins, they count too.",
+  "A tired mind needs a break, not a reason to quit.",
+  "Dream big, then take one tiny step today.",
+  "Your effort matters, even when nobody sees it.",
+  "Let today be a fresh start.",
+  "Every question you ask makes you smarter.",
+  "Do it tired, do it nervous, but be kind to yourself while you do.",
+  "Good things take time, and you are on your way.",
+  "Trust the process and keep showing up.",
+  "Think of how proud you will feel when it is done.",
+  "You are doing better than you give yourself credit for.",
+  "Stay curious, stay gentle, stay going.",
+  "Tough moments grow strong people.",
+  "Keep your goals close and your worries light.",
+  "Today is a good day to learn something new.",
+  "Your best does not have to look like anyone else's.",
+  "Slow progress is still progress.",
+  "Take the first step, the second one gets easier.",
+  "You can do hard things, one at a time.",
+  "Enjoy the journey, not just the finish line.",
+  "Every day is another chance to grow.",
+  "Be patient with yourself, growth takes time.",
+  "Pick one thing, give it your full attention, and begin.",
+  "Believe it is possible, then work toward it.",
+  "Kindness to yourself is never wasted.",
+  "Your dreams are worth the effort.",
+  "You are not behind. You are on your own path."
+];
+const FLOWER_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+  '<circle class="dm-petal" cx="12" cy="6" r="3.4"/><circle class="dm-petal" cx="18" cy="10.4" r="3.4"/>' +
+  '<circle class="dm-petal" cx="15.7" cy="17.4" r="3.4"/><circle class="dm-petal" cx="8.3" cy="17.4" r="3.4"/>' +
+  '<circle class="dm-petal" cx="6" cy="10.4" r="3.4"/><circle class="dm-core" cx="12" cy="12" r="2.6"/></svg>';
+const dayNo = () => Math.floor((Date.now() - new Date().getTimezoneOffset() * 60000) / 86400000);
+let dmShift = 0;
+const quoteNow = () => QUOTES[(dayNo() + dmShift) % QUOTES.length];
+const dm = document.createElement('div');
+dm.className = 'dm-card';
+dm.setAttribute('role', 'note');
+dm.title = 'Tap for another one';
+const dmIco = document.createElement('div');
+dmIco.className = 'dm-ico';
+dmIco.innerHTML = FLOWER_ICON;
+const dmBox = document.createElement('div');
+dmBox.className = 'dm-box';
+const dmLabel = document.createElement('div');
+dmLabel.className = 'dm-label';
+dmLabel.textContent = "Julia's daily motivation";
+const dmText = document.createElement('div');
+dmText.className = 'dm-text';
+dmText.textContent = quoteNow();
+dmBox.appendChild(dmLabel);
+dmBox.appendChild(dmText);
+dm.appendChild(dmIco);
+dm.appendChild(dmBox);
+
+/* Daily Motivation Quote */
+const DM_ROTATE_MS = 12000;
+const DM_FADE_MS = 350;
+let dmTimer = null, dmPaused = false;
+function dmNext(){
+  dmShift = (dmShift + 1) % QUOTES.length;
+  dmText.classList.add('dm-out');
+  setTimeout(() => { dmText.textContent = quoteNow(); dmText.classList.remove('dm-out'); }, DM_FADE_MS);
+}
+function dmStart(){
+  clearInterval(dmTimer);
+  dmTimer = setInterval(() => { if(!document.hidden && !dmPaused) dmNext(); }, DM_ROTATE_MS);
+}
+dm.addEventListener('click', () => { dmNext(); dmStart(); });
+dm.addEventListener('mouseenter', () => { dmPaused = true; });
+dm.addEventListener('mouseleave', () => { dmPaused = false; });
+dmStart();
+const dmHost = document.querySelector('.topbar');
+if(dmHost) dmHost.after(dm); else document.querySelector('.main').prepend(dm);
+
+}catch(e){ console.error('Look-and-feel setup failed', e); }
+
+/* Start  */
 stampAll(false);
 rawSave();
-renderChat(); // re-draw existing replies with formatting
+renderChat();
 syncNow();
 setInterval(() => { if(!document.hidden) syncNow(); }, POLL_MS);
 document.addEventListener('visibilitychange', () => { if(!document.hidden) syncNow(); });
