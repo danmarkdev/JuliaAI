@@ -3,7 +3,6 @@
 
 const EXTRAS_VERSION = 'v15';
 
-/* copyhelper (https) */
 function copyText(txt){
   return new Promise((resolve, reject) => {
     const legacy = () => {
@@ -31,7 +30,6 @@ function copyText(txt){
   });
 }
 
-/* Markdown Rendering */
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 const NUL = '\u0000';
 const LI = /^(\s*)([-*\u2022]|\d+[.)])\s+(.*)$/;
@@ -110,7 +108,6 @@ function md(src){
   return o;
 }
 
-// AI bubbles render as formatted HTML
 const baseAppend = appendBubble;
 appendBubble = function(role, text){
   const bubble = baseAppend.apply(null, arguments);
@@ -118,7 +115,7 @@ appendBubble = function(role, text){
     const span = bubble.lastElementChild;
     if(span && span.tagName === 'SPAN'){ span.innerHTML = md(text); bubble.classList.add('md'); }
   }
- 
+  
   const att = arguments[3];
   if(!text && att && att.length && bubble.querySelector('.file-card')) bubble.classList.add('file-only');
   return bubble;
@@ -134,8 +131,7 @@ document.addEventListener('click', e => {
   }, () => {});
 });
 
-/* format rules */
-const baseSystemPrompt = buildSystPrompt;
+const baseSystemPrompt = buildSystemPrompt;
 buildSystemPrompt = function(){
   return baseSystemPrompt() +
     "\n\nFORMATTING: your replies are shown as markdown, so match the format to what the person needs. " +
@@ -150,11 +146,10 @@ buildSystemPrompt = function(){
     "Use headings (##) only for long, multi-part answers. Never wrap a whole reply in a code block.";
 };
 
-/* Cross Device Sync */
 const LS_CODE = 'juliaSyncCode', LS_DEL = 'juliaSyncDeleted';
 const ALPHA = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-const POLL_MS = 10000;      
-const TIMEOUT_MS = 20000;   
+const POLL_MS = 10000;      // check for changes from other devices every 10 seconds
+const TIMEOUT_MS = 20000;   // never let a stuck request block syncing forever
 
 const makeCode = () => Array.from(crypto.getRandomValues(new Uint8Array(20)), b => ALPHA[b % 32]).join('');
 let code = localStorage.getItem(LS_CODE) || '';
@@ -185,7 +180,6 @@ saveState = function(){ stampAll(true); rawSave(); dirty = true; clearTimeout(ti
 const rawDelete = deleteConversation;
 deleteConversation = function(id){ tomb[id] = Date.now(); saveTomb(); sigs.delete(id); rawDelete(id); };
 
-// Photos and files syncs both devices
 const strip = c => ({ ...c, messages: c.messages.map(m => (m.attachments && m.attachments.length)
   ? { ...m, attachments: m.attachments.map(a => ({ name: (a.name || 'Image') + ' (on other device)', mimeType: 'omitted', omitted: 1 })) }
   : m) });
@@ -239,7 +233,6 @@ function merge(r){
 
 function setStatus(t){ const e = document.getElementById('syncStatus'); if(e) e.textContent = t; }
 
-// stopping the freeze syncing
 async function call(path, opts){
   const ctl = new AbortController();
   const to = setTimeout(() => ctl.abort(), TIMEOUT_MS);
@@ -277,13 +270,13 @@ async function syncNow(manual){
       const body = JSON.stringify({ conversations: conversations.filter(c => c.messages.length).map(strip), deleted: tomb });
       const p = await call('/sync', { method: 'PUT', headers: { ...head, 'Content-Type': 'application/json' }, body });
       if(!p.ok) throw new Error('PUT ' + p.status);
-      
+    
       if(p.data && Array.isArray(p.data.conversations)){
         workerOld = false;
         serverCount = p.data.conversations.length;
         if(usedCode === code && !document.getElementById('typingMsg')) merge(p.data);
       }else{
-        workerOld = true;   // saved chats
+        workerOld = true;  
       }
     }
     const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -302,7 +295,6 @@ async function syncNow(manual){
   }
 }
 
-/* sync ui */
 const openBtn = document.createElement('button');
 openBtn.type = 'button';
 openBtn.className = 'new-chat-btn sync-btn';
@@ -357,13 +349,11 @@ document.getElementById('syncLink').addEventListener('click', () => {
   syncNow(true);
 });
 
-
 try{
-   
+
 i18n.en.placeholder = 'Ask Julia AI...';
 input.placeholder = i18n.en.placeholder;
 
-// File cards
 const FILE_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>';
 function fileParts(a){
   const full = String(a.name || 'file').replace(/\s*\(on other device\)\s*$/i, '');
@@ -403,7 +393,6 @@ attachmentsToHtmlGrid = function(attachments){
   return grid;
 };
 
-// Daily Motivation Quotes
 const QUOTES = [
   "Small steps still move you forward.",
   "Be proud of how far you have come, not only how far you have to go.",
@@ -492,7 +481,6 @@ dmBox.appendChild(dmText);
 dm.appendChild(dmIco);
 dm.appendChild(dmBox);
 
-/* Daily Motivation Quote */
 const DM_ROTATE_MS = 12000;
 const DM_FADE_MS = 350;
 let dmTimer = null, dmPaused = false;
@@ -514,10 +502,9 @@ if(dmHost) dmHost.after(dm); else document.querySelector('.main').prepend(dm);
 
 }catch(e){ console.error('Look-and-feel setup failed', e); }
 
-/* Start  */
 stampAll(false);
 rawSave();
-renderChat();
+renderChat(); 
 syncNow();
 setInterval(() => { if(!document.hidden) syncNow(); }, POLL_MS);
 document.addEventListener('visibilitychange', () => { if(!document.hidden) syncNow(); });
