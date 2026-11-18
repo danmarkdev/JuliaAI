@@ -3,7 +3,7 @@
 
 const EXTRAS_VERSION = 'v15';
 
-/* CopyHelper (Https) */
+/* copyhelper (https) */
 function copyText(txt){
   return new Promise((resolve, reject) => {
     const legacy = () => {
@@ -239,7 +239,7 @@ function merge(r){
 
 function setStatus(t){ const e = document.getElementById('syncStatus'); if(e) e.textContent = t; }
 
-// One network call with a hard time limit, so a hung request on mobile can never freeze syncing.
+// stopping the freeze syncing
 async function call(path, opts){
   const ctl = new AbortController();
   const to = setTimeout(() => ctl.abort(), TIMEOUT_MS);
@@ -302,7 +302,7 @@ async function syncNow(manual){
   }
 }
 
-/* Sync UI */
+/* sync ui */
 const openBtn = document.createElement('button');
 openBtn.type = 'button';
 openBtn.className = 'new-chat-btn sync-btn';
