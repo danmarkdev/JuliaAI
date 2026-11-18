@@ -1,4 +1,3 @@
-/* Automated Practice Quiz & FlashCard Engine */
 (function(){
 'use strict';
 
@@ -35,7 +34,6 @@ function shuffle(a){
   return a;
 }
 
-/* overlay shell */
 const overlay = el('div', 'qz-overlay');
 const card = el('div', 'qz-card');
 const closeX = btn('qz-x', '\u00D7', close);
@@ -59,7 +57,6 @@ fileInput.addEventListener('change', () => {
   pickFiles(files);
 });
 
-/* sidebar button  */
 const openBtn = document.createElement('button');
 openBtn.type = 'button';
 openBtn.className = 'new-chat-btn qz-open';
@@ -94,7 +91,6 @@ function openStudy(){
 }
 function close(){ S.token++; overlay.classList.remove('show'); }
 
-// Difficulty icon 3 bars levels.
 function levelIcon(n){
   const s = el('span', 'qz-level');
   s.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' +
@@ -104,10 +100,9 @@ function levelIcon(n){
   return s;
 }
 
-/* setup screen */
 function sourceLabel(){
   if(S.src === 'chat'){ const c = currentConv(); return c && c.messages.length ? 'this chat' : 'a chat'; }
-  if(S.src === 'file') S.files.length ? S.files.map(f => f.name).join(', ') : 'a file';
+  if(S.src === 'file') return S.files.length ? S.files.map(f => f.name).join(', ') : 'a file';
   return S.topic.trim() ? S.topic.trim() : 'a topic';
 }
 function ready(){
@@ -230,7 +225,6 @@ async function pickFiles(list){
   renderSetup(msg);
 }
 
-/* ai message Function */
 function buildSystem(kind){
   const diff = {
     easy: 'EASY: direct recall of key facts, terms and definitions.',
@@ -289,7 +283,7 @@ async function ask(kind){
           const evt = JSON.parse(d);
           const parts = (evt && evt.candidates && evt.candidates[0] && evt.candidates[0].content && evt.candidates[0].content.parts) || [];
           full += parts.map(p => p.text || '').join('');
-        }catch(e)
+        }catch(e){ /* partial json */ }
       }
     }
     return full;
@@ -301,7 +295,7 @@ function jsonObjects(txt){
   String(txt).replace(/```[a-z]*/gi, '').split('\n').forEach(l => {
     l = l.trim().replace(/,$/, '');
     if(l[0] !== '{') return;
-    try{ out.push(JSON.parse(l)); }catch(e)
+    try{ out.push(JSON.parse(l)); }catch(e){ /* skip a broken or cut-off line */ }
   });
   if(out.length) return out;
   try{
@@ -369,7 +363,6 @@ function renderLoading(kind){
   body.appendChild(cancel);
 }
 
-/* Automated/Practice Quiz */
 function startQuiz(){ Q.i = 0; Q.score = 0; Q.answered = false; renderQuestion(); }
 
 function renderQuestion(){
@@ -443,7 +436,6 @@ function renderResults(){
   body.appendChild(actions);
 }
 
-/* flashcards */
 function startCards(){ C.i = 0; C.flipped = false; renderCard(); }
 
 function flipCard(){
@@ -501,7 +493,6 @@ function renderCard(){
 }
 })();
 
-/* AutoScroll */
 (function(){
 'use strict';
 
@@ -520,13 +511,10 @@ new MutationObserver(muts => {
   toBottom(added === 1 && removed === 0);
 }).observe(chatInner, { childList: true });
 
-// Generated pictures
 chatInner.addEventListener('load', () => toBottom(false), true);
 
-// Mobile keyboard opening/closing changes the screen height
 window.addEventListener('resize', () => toBottom(false));
 
-// scroll right after sending
 sendBtn.addEventListener('click', () => toBottom(true));
 input.addEventListener('keydown', e => {
   if(e.key === 'Enter' && !e.shiftKey) toBottom(true);
