@@ -1,18 +1,9 @@
-// ---------------------------------------------------------------
-// Your Cloudflare Worker URL (see Mimi worker.js setup steps).
-// The worker holds your Gemini API key server-side so it never
-// appears in this file or anywhere the browser can see it.
 const API_ENDPOINT = "https://julia-ai-chat-proxy.kdanmarkrosalejos.workers.dev";
-// ---------------------------------------------------------------
 
 const MAX_ATTACHMENTS = 4;
 const MAX_ATTACHMENT_MB = 5;
 const STORAGE_KEY = 'juliaAiConversations';
 
-// Julia decides on her own, per message, whether the user is asking for a
-// picture. When she is, her entire reply is just this marker followed by
-// a vivid English description; the client intercepts it, never shows it as
-// a chat bubble, and calls the image endpoint instead.
 const IMAGE_MARKER_RE = /IMAGE_REQUEST\s*::?\s*([\s\S]+)/i;
 
 const i18n = {
@@ -87,17 +78,14 @@ const attachBtn = document.getElementById('attachBtn');
 const fileInput = document.getElementById('fileInput');
 const attachPreview = document.getElementById('attachPreview');
 
-let conversations = [];      // {id, title, lang, customTitle, messages:[{role, content, attachments}]}
+let conversations = [];      
 let currentId = null;
-let pendingAttachments = []; // [{id, name, mimeType, dataUrl, base64}]
+let pendingAttachments = []; 
 
 function uid(){ return Math.random().toString(36).slice(2,9); }
 
-// Julia's avatar in chat (the kitty image).
-const KITTY_IMG = window.KITTY_SRC || 'hello_kitty.png'; // kitty-icon.js is optional
+const KITTY_IMG = window.KITTY_SRC || 'hello_kitty.png'; 
 const AVATAR_SVG = '<img src="' + KITTY_IMG + '" alt="">';
-
-/* ---------------- Persistence (localStorage) ---------------- */
 
 function saveState(){
   try{
@@ -138,11 +126,9 @@ function currentConv(){
   return conversations.find(c => c.id === currentId);
 }
 
-/* ---------------- History list: select / rename / delete ---------------- */
-
 function renderHistory(){
   historyEl.innerHTML = '';
-  // Only show conversations that belong to the language currently selected.
+ 
   const filtered = conversations.filter(c => c.lang === currentLang);
   if(filtered.length === 0){
     const empty = document.createElement('div');
@@ -235,8 +221,6 @@ function deleteConversation(id){
   saveState();
 }
 
-/* ---------------- Chat rendering ---------------- */
-
 function renderChat(){
   stopSpeaking();
   const conv = currentConv();
@@ -271,8 +255,6 @@ function attachmentsToHtmlGrid(attachments){
   return grid;
 }
 
-/* ---------------- Message action buttons: read aloud / like / dislike / retry ---------------- */
-
 const ICON_SPEAK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 010 7M19 5a9 9 0 010 14"/></svg>';
 const ICON_STOP = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
 const ICON_LIKE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z"/><path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3"/></svg>';
@@ -282,8 +264,6 @@ const ICON_RETRY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 const SPEECH_LANG = { en:'en-US' };
 let speakingBtn = null;
 
-// Browsers don't say which voices are female, so we rank installed voices by name:
-// known female names score up, known male names score down.
 const FEMALE_VOICE_RE = /zira|aria|jenny|michelle|emma|ava\b|sonia|libby|natasha|clara|samantha|karen|victoria|allison|susan|serena|moira|tessa|fiona|kate|heather|nicky|joanna|salli|ivy|kendra|kimberly|female|woman|blessica|rosa|elvira|dalia|helena|paulina|monica|sabina|laura|paloma|marisol|elena|lucia|kyoko|nanami|haruka|ayumi|mayu|sayaka|o-ren|yuna|sunhi|sun-hi|seoyeon|google us english|google \u65e5\u672c\u8a9e|google espa\u00f1ol|google \ud55c\uad6d\uc758/i;
 const MALE_VOICE_RE = /\bmale\b|\bman\b|david|mark\b|guy\b|ryan|james|george|richard|daniel|alex\b|fred\b|tom\b|thomas|eric|christopher|roger|steffan|brian|davis|angelo|jorge|pablo|raul|diego|enrique|ichiro|keita|takumi|naoki|hyunsu|injoon|hemant|rishi/i;
 
@@ -308,7 +288,7 @@ function pickFemaleVoice(langKey){
   });
   return best;
 }
-// Some browsers load their voice list a moment after the page opens.
+
 if('speechSynthesis' in window){
   window.speechSynthesis.getVoices();
   window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
@@ -377,7 +357,6 @@ function removeOldRetryButtons(){
   chatInner.querySelectorAll('.msg-retry-btn').forEach(b => b.remove());
 }
 
-// Regenerate the newest reply: drop the AI answer(s) after the last user message and ask again.
 function retryLast(conv){
   if(!conv || document.getElementById('typingMsg')) return;
   while(conv.messages.length && conv.messages[conv.messages.length - 1].role === 'ai'){
@@ -390,7 +369,6 @@ function retryLast(conv){
   getAIResponse(conv);
 }
 
-// Adds a "try again" button to an error bubble.
 function addRetry(bubble, conv){
   if(!bubble || !bubble.parentElement) return;
   let tools = bubble.parentElement.querySelector('.msg-tools');
@@ -408,7 +386,6 @@ function appendBubble(role, text, idx, attachments, animate=true){
   const msg = document.createElement('div');
   msg.className = 'msg ' + role;
 
-  // Only Julia (the AI) gets an avatar; no icon for the user's own messages.
   let avatar = null;
   if(role === 'ai'){
     avatar = document.createElement('div');
@@ -431,7 +408,6 @@ function appendBubble(role, text, idx, attachments, animate=true){
 
   col.appendChild(bubble);
 
-  // User messages: edit button. AI messages: copy button.
   if(role === 'user' && typeof idx === 'number'){
     const tools = document.createElement('div');
     tools.className = 'msg-tools';
@@ -449,7 +425,6 @@ function appendBubble(role, text, idx, attachments, animate=true){
     const conv = currentConv();
     const stored = (conv && typeof idx === 'number') ? conv.messages[idx] : null;
 
-    // Copy
     const copyBtn = document.createElement('button');
     copyBtn.className = 'msg-copy-btn';
     copyBtn.type = 'button';
@@ -468,7 +443,7 @@ function appendBubble(role, text, idx, attachments, animate=true){
         if(text){
           await navigator.clipboard.writeText(text);
         } else if(attachments && attachments.length){
-          // No caption (e.g. a generated picture): copy the image itself.
+          
           const a = attachments[0];
           const dataUrl = a.dataUrl || ('data:' + a.mimeType + ';base64,' + a.data);
           const blob = await (await fetch(dataUrl)).blob();
@@ -479,14 +454,12 @@ function appendBubble(role, text, idx, attachments, animate=true){
     };
     tools.appendChild(copyBtn);
 
-    // Read aloud
     if(text && 'speechSynthesis' in window){
       const speakBtn = makeToolBtn('msg-speak-btn', t('readAloud'), ICON_SPEAK);
       speakBtn.onclick = () => toggleSpeak(text, speakBtn);
       tools.appendChild(speakBtn);
     }
 
-    // Good / bad response
     if(stored){
       const likeBtn = makeToolBtn('msg-like-btn', t('goodResponse'), ICON_LIKE);
       const dislikeBtn = makeToolBtn('msg-dislike-btn', t('badResponse'), ICON_DISLIKE);
@@ -501,7 +474,6 @@ function appendBubble(role, text, idx, attachments, animate=true){
       tools.appendChild(dislikeBtn);
     }
 
-    // Try again (only on the newest reply)
     if(stored && conv && idx === conv.messages.length - 1){
       const retryBtn = makeToolBtn('msg-retry-btn', t('retryMessage'), ICON_RETRY);
       retryBtn.onclick = () => retryLast(conv);
@@ -559,8 +531,6 @@ function commitEditMessage(idx, newText){
   const conv = currentConv();
   if(!conv) return;
 
-  // Update the edited message, then drop everything after it,
-  // since the conversation branches here.
   conv.messages[idx].content = text;
   conv.messages = conv.messages.slice(0, idx + 1);
 
@@ -589,8 +559,6 @@ function appendTyping(label){
   chatScroll.scrollTop = chatScroll.scrollHeight;
   return msg;
 }
-
-/* ---------------- Attachments (the "+" button) ---------------- */
 
 attachBtn.addEventListener('click', () => fileInput.click());
 
@@ -639,11 +607,10 @@ async function addFiles(files){
 
 fileInput.addEventListener('change', () => {
   const files = Array.from(fileInput.files || []);
-  fileInput.value = ''; // allow re-selecting the same file later
+  fileInput.value = ''; 
   addFiles(files);
 });
 
-// Drag & drop files anywhere on the page (e.g. straight from Chrome's downloads list)
 function hasFiles(e){
   return e.dataTransfer && Array.from(e.dataTransfer.types || []).includes('Files');
 }
@@ -662,7 +629,6 @@ document.addEventListener('drop', (e) => {
   addFiles(Array.from(e.dataTransfer.files || []));
 });
 
-// Paste screenshots / files straight into the message box
 input.addEventListener('paste', (e) => {
   const files = Array.from((e.clipboardData && e.clipboardData.files) || []);
   if(files.length){ e.preventDefault(); addFiles(files); }
@@ -709,7 +675,6 @@ function renderAttachPreview(){
   });
 }
 
-// A tiny inline system-style notice for attachment problems (too big, wrong type, etc).
 function appendSystemNotice(text){
   const conv = currentConv();
   if(!conv) return;
@@ -717,8 +682,6 @@ function appendSystemNotice(text){
   appendBubble('ai', text, undefined, undefined, true);
   chatScroll.scrollTop = chatScroll.scrollHeight;
 }
-
-/* ---------------- Composer ---------------- */
 
 function autoResize(){
   input.style.height = 'auto';
@@ -749,8 +712,6 @@ newChatBtn.addEventListener('click', () => { newConversation(); closeSidebarMobi
 menuBtn.addEventListener('click', () => { sidebar.classList.add('open'); overlay.classList.add('show'); });
 overlay.addEventListener('click', closeSidebarMobile);
 function closeSidebarMobile(){ sidebar.classList.remove('open'); overlay.classList.remove('show'); }
-
-/* ---------------- Sending & AI response ---------------- */
 
 async function send(){
   const text = input.value.trim();
@@ -800,7 +761,6 @@ async function getAIResponse(conv){
       throw new Error('NOT_CONFIGURED');
     }
 
-    // Gemini expects role "user" or "model"; the worker translates our 'assistant'.
     const apiMessages = conv.messages.map(m => ({
       role: m.role === 'ai' ? 'assistant' : 'user',
       content: m.content,
@@ -820,8 +780,6 @@ async function getAIResponse(conv){
       throw new Error('Request failed: ' + response.status);
     }
 
-    // Buffer the full reply first so an IMAGE_REQUEST:: marker is caught
-    // silently and never flashed at the user.
     let fullText = '';
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
@@ -841,7 +799,7 @@ async function getAIResponse(conv){
           const evt = JSON.parse(dataStr);
           const piece = evt?.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
           if(piece) fullText += piece;
-        }catch(e){ /* ignore partial json */ }
+        }catch(e)
       }
     }
 
@@ -918,7 +876,6 @@ async function getImageResponse(conv, prompt, existingTypingMsg){
   }
 }
 
-// init
 const loaded = loadState();
 applyLanguage();
 if(loaded){
