@@ -14,7 +14,6 @@ const S = { mode: 'quiz', diff: 'easy', n: 10, src: 'chat', files: [], topic: ''
 const Q = { list: [], i: 0, score: 0, answered: false };
 const C = { list: [], i: 0, flipped: false };
 
-/* tiny helpers  */
 function el(tag, cls, text){
   const e = document.createElement(tag);
   if(cls) e.className = cls;
@@ -231,7 +230,7 @@ async function pickFiles(list){
   renderSetup(msg);
 }
 
-/* AI Message Function */
+/* ai message Function */
 function buildSystem(kind){
   const diff = {
     easy: 'EASY: direct recall of key facts, terms and definitions.',
@@ -290,7 +289,7 @@ async function ask(kind){
           const evt = JSON.parse(d);
           const parts = (evt && evt.candidates && evt.candidates[0] && evt.candidates[0].content && evt.candidates[0].content.parts) || [];
           full += parts.map(p => p.text || '').join('');
-        }catch(e){ /* partial json */ }
+        }catch(e)
       }
     }
     return full;
@@ -302,7 +301,7 @@ function jsonObjects(txt){
   String(txt).replace(/```[a-z]*/gi, '').split('\n').forEach(l => {
     l = l.trim().replace(/,$/, '');
     if(l[0] !== '{') return;
-    try{ out.push(JSON.parse(l)); }catch(e){ /* skip a broken or cut-off line */ }
+    try{ out.push(JSON.parse(l)); }catch(e)
   });
   if(out.length) return out;
   try{
@@ -515,20 +514,19 @@ function toBottom(smooth){
   });
 }
 
-// One message added -> smooth scroll. A whole chat redrawn -> jump straight down.
 new MutationObserver(muts => {
   let added = 0, removed = 0;
   muts.forEach(m => { added += m.addedNodes.length; removed += m.removedNodes.length; });
   toBottom(added === 1 && removed === 0);
 }).observe(chatInner, { childList: true });
 
-// Generated pictures grow the chat once they finish loading.
+// Generated pictures
 chatInner.addEventListener('load', () => toBottom(false), true);
 
-// Mobile keyboard opening/closing changes the screen height.
+// Mobile keyboard opening/closing changes the screen height
 window.addEventListener('resize', () => toBottom(false));
 
-// scroll right after sending.
+// scroll right after sending
 sendBtn.addEventListener('click', () => toBottom(true));
 input.addEventListener('keydown', e => {
   if(e.key === 'Enter' && !e.shiftKey) toBottom(true);
