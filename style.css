@@ -1,5 +1,4 @@
 :root{
-  /* Hello Kitty Theme (Pink Background) */
   --pink-50:#fff0f7;
   --pink-100:#ffd6ea;
   --pink-200:#ffadd3;
@@ -167,7 +166,6 @@ html, body, .app { width:100%; height:100%; }
   border-top:1px solid var(--pink-200);
 }
 
-/* Main */
 .main{
   display:flex;
   flex-direction:column;
@@ -247,7 +245,6 @@ html, body, .app { width:100%; height:100%; }
   gap:22px;
 }
 
-/* Empty state hero */
 .hero{
   display:flex;
   flex-direction:column;
@@ -292,7 +289,6 @@ html, body, .app { width:100%; height:100%; }
 }
 .chip:hover{ transform: translateY(-2px); box-shadow: var(--shadow); border-color: var(--bow); }
 
-/* Messages */
 .msg{
   display:flex;
   gap:12px;
@@ -450,7 +446,6 @@ html, body, .app { width:100%; height:100%; }
   margin-left:6px;
 }
 
-/* Input */
 .composer-wrap{
   padding: 10px 24px 22px;
 }
@@ -560,7 +555,6 @@ html, body, .app { width:100%; height:100%; }
   margin-top:10px;
 }
 
-/* Scrollbars */
 .chat-scroll::-webkit-scrollbar{ width:7px; }
 .chat-scroll::-webkit-scrollbar-thumb{
   background: var(--pink-200); border-radius:10px;
@@ -569,7 +563,6 @@ html, body, .app { width:100%; height:100%; }
 .history{ scrollbar-width:none; -ms-overflow-style:none; }
 .history::-webkit-scrollbar{ display:none; width:0; height:0; }
 
-/* Mobile Responsive Design */
 @media (max-width: 820px){
   .sidebar{
     position:fixed; top:0; left:0; bottom:0; width:260px;
@@ -584,7 +577,6 @@ html, body, .app { width:100%; height:100%; }
   }
   .overlay.show{ display:block; }
 
-  /* Hero */
   .hero{
     height:auto;
     justify-content:flex-start;
@@ -612,7 +604,6 @@ html, body, .app { width:100%; height:100%; }
   .lang-select{ font-size:12px; padding:7px 9px; padding-right:24px; }
   .paw-badge{ width:32px; height:32px; font-size:14px; }
 
-  /* Touch screens */
   .history-rename, .history-delete{
     opacity:1;
     width:34px;
@@ -630,7 +621,6 @@ html, body, .app { width:100%; height:100%; }
   .typing span{ animation:none; }
 }
 
-/* drag & drop + file attachments */
 body.dragging .main::after{
   content:"Drop files here";
   position:absolute; inset:12px;
@@ -655,10 +645,10 @@ body.dragging .main::after{
   border:1px solid var(--pink-200);
   color:var(--ink);
   font-size:12.5px;
+  font-size:12.5px;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
 
-/* file previews live inside the message box */
 .composer{ flex-wrap:wrap; }
 .composer .attach-preview{
   flex:0 0 100%;
@@ -668,7 +658,6 @@ body.dragging .main::after{
   padding:2px 6px 6px;
 }
 
-/* Message action buttons */
 .msg.ai .msg-tools{ opacity:1; gap:6px; height:28px; }
 .msg.ai .msg-copy-btn,
 .msg-speak-btn, .msg-like-btn, .msg-dislike-btn, .msg-retry-btn{
@@ -689,13 +678,11 @@ body.dragging .main::after{
 .msg-speak-btn.active, .msg-like-btn.active, .msg-dislike-btn.active{ background:var(--bow); color:#ffffff; border-color:var(--bow); }
 .msg-like-btn.active svg, .msg-dislike-btn.active svg{ fill:currentColor; }
 
-/* Sidebar buttons (Practice quiz, Sync devices) */
 .sync-btn, .qz-open{
   width:100%;
   justify-content:center;
 }
 
-/* Formatted replies (lists, code blocks, tables) */
 .bubble.md{
   white-space:normal;
   min-width:0;
@@ -828,7 +815,6 @@ body.dragging .main::after{
 .bubble.md li.d3{ margin-left:54px; }
 .bubble.md li.d4{ margin-left:72px; }
 
-/* Sync Devices Window */
 .sync-modal{
   display:none;
   position:fixed;
@@ -946,7 +932,6 @@ body.dragging .main::after{
   color:var(--ink-soft);
 }
 
-/* Sync window */
 @media (max-width:820px), (max-height:700px){
   .sync-modal{ padding:12px 16px 20px; }
   .sync-card{
@@ -964,11 +949,9 @@ body.dragging .main::after{
   .sync-card .sync-note{ font-size:11.5px; line-height:1.4; }
   .sync-card .sync-close{ margin-bottom:0; }
   
-  /* Close button Card */
   .sync-card::after{ content:""; display:block; height:8px; }
 }
 
-/* Daily Motivation Card */
 .dm-card{
   align-self:flex-end;
   width:420px;
@@ -1020,7 +1003,7 @@ body.dragging .main::after{
 @media (prefers-reduced-motion: reduce){
   .dm-text{ transition:none; }
 }
-/* Responsive Design on Mobile */
+
 @media (max-width:820px){
   .dm-card{
     align-self:stretch;
@@ -1036,7 +1019,6 @@ body.dragging .main::after{
   .dm-text{ font-size:13px; line-height:1.4; min-height:calc(1.4em * 2); }
 }
 
-/* file cards */
 .file-card{
   display:flex;
   align-items:center;
@@ -1082,7 +1064,7 @@ body.dragging .main::after{
   text-overflow:ellipsis;
   white-space:nowrap;
 }
-/* Message in file (no bubble) */
+
 .bubble.file-only{
   background:transparent !important;
   border:none !important;
@@ -1091,7 +1073,6 @@ body.dragging .main::after{
 .bubble.file-only > span{ display:none; }
 .bubble.file-only .bubble-attachments{ margin-bottom:0; }
 
-/* Small Helpers */
 .copy-helper{
   position:fixed;
   top:0;
@@ -1100,7 +1081,6 @@ body.dragging .main::after{
   font-size:16px;
 }
 
-/* ---------- Practice quiz ---------- */
 .qz-overlay{
   display:none;
   position:fixed;
@@ -1549,7 +1529,6 @@ body.dragging .main::after{
   .qz-flip-in, .qz-prog-in{ transition:none; }
 }
 
-/* Practice Quiz Responsive Design */
 @media (max-width:820px), (max-height:700px){
   .qz-overlay{ padding:8px; }
   .qz-card{
