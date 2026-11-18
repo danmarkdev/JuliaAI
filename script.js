@@ -78,14 +78,15 @@ const attachBtn = document.getElementById('attachBtn');
 const fileInput = document.getElementById('fileInput');
 const attachPreview = document.getElementById('attachPreview');
 
-let conversations = [];      
+let conversations = [];     
 let currentId = null;
-let pendingAttachments = []; 
+let pendingAttachments = [];
 
 function uid(){ return Math.random().toString(36).slice(2,9); }
 
 const KITTY_IMG = window.KITTY_SRC || 'hello_kitty.png'; 
 const AVATAR_SVG = '<img src="' + KITTY_IMG + '" alt="">';
+
 
 function saveState(){
   try{
@@ -128,7 +129,7 @@ function currentConv(){
 
 function renderHistory(){
   historyEl.innerHTML = '';
- 
+  // Only show conversations that belong to the language currently selected.
   const filtered = conversations.filter(c => c.lang === currentLang);
   if(filtered.length === 0){
     const empty = document.createElement('div');
@@ -443,7 +444,7 @@ function appendBubble(role, text, idx, attachments, animate=true){
         if(text){
           await navigator.clipboard.writeText(text);
         } else if(attachments && attachments.length){
-          
+       
           const a = attachments[0];
           const dataUrl = a.dataUrl || ('data:' + a.mimeType + ';base64,' + a.data);
           const blob = await (await fetch(dataUrl)).blob();
@@ -799,7 +800,7 @@ async function getAIResponse(conv){
           const evt = JSON.parse(dataStr);
           const piece = evt?.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
           if(piece) fullText += piece;
-        }catch(e)
+        }catch(e){ /* ignore partial json */ }
       }
     }
 
